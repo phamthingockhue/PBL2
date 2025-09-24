@@ -1,5 +1,0 @@
-P01, Pham Thi Ngoc Khue, ngockhue121, ptnkhuee@gmail.com
-P02, Dau Thuy Ngan, thuyngan122, daungan0903@gmail.com
-P03, Nguyen Viet Anh, vietanh123, anhnguyen23@gmail.com
-P04, Bui Van Nam, vannam124, nam.bui01@gmail.com
-P05, Nguyen Mai, mai@@, mai@gmail.com
