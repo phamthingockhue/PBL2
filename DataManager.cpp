@@ -126,7 +126,7 @@ void DataManager::loadChiTietGD(const string& tenFile, MyVector<ChiTietGD*>& dsC
         getline(ss, moTa, ',');
         getline(ss, soTienGDStr, ','); long long soTienGD = stoll(soTienGDStr);
 
-        dsChiTietGD.push_back(new ChiTietGD(maGD, maVi, maDM, moTa, soTienGD));
+        dsChiTietGD.push_back(new ChiTietGD(maGD, maCTGD, maVi, maDM, moTa, soTienGD));
     }
     fin.close();
 }
@@ -221,5 +221,4 @@ bool DataManager::saveDataNguoiDung(NguoiDung* nd) {
     saveChiTietGD(userFolder + "chitietgd.txt", dsChiTietGD);
     return true;
 }
-
 

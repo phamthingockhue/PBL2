@@ -23,34 +23,15 @@ public:
     string getMaGD() { return maGD; }
     long long getTongThu() { return tongThu; }
     long long getTongChi() { return tongChi; }
+    MyVector<ChiTietGD*> getDsChiTiet() { return dsChiTiet; }
 
-    size_t getSoLuongChiTiet() const { return dsChiTiet.get_size(); }
-    ChiTietGD* getChiTietGD(int index) 
-    {
-        return dsChiTiet[index];
-    }
 
     void setTongThu(long long _tien) { tongThu = _tien; }
     void setTongChi(long long _tien) { tongChi = _tien; }
+    void setDsChiTiet(MyVector<ChiTietGD*> ds) { dsChiTiet = ds; }
 
-    void themChiTiet(ChiTietGD* ctgd);
+    void themChiTiet(ChiTietGD ctgd);
 
-    MyVector<ChiTietGD*> getDsChiTiet() { return dsChiTiet; }
-
-    void capNhatTongTien() {
-        for (int i = 0; i < dsChiTiet.get_size(); i++) {
-            DanhMuc* dm = dsChiTiet[i]->getDanhMuc(); 
-            if (dm == nullptr) continue; 
-
-            if (dm->getLoaiDM() == "Thu") 
-            {
-                this->tongThu += dsChiTiet[i]->getSoTienGD();
-            }
-            else 
-            { 
-                this->tongChi += dsChiTiet[i]->getSoTienGD();
-            }
-        }
-    }
+    void capNhatTongTien();
 };
 

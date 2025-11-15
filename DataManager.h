@@ -14,6 +14,7 @@
 #include "GiaoDich.h"
 #include "ChiTietGD.h"
 
+
 namespace fs = std::filesystem;
 
 using namespace std;
@@ -28,6 +29,9 @@ public:
     MyVector<DanhMuc*> dsDanhMuc;
     MyVector<GiaoDich> dsGiaoDich;
     MyVector<ChiTietGD*> dsChiTietGD;
+
+
+
 
     void setBasePath(const string& path);
     string getBasePath() const;
@@ -53,3 +57,4 @@ public:
     bool loadDataNguoiDung(NguoiDung* nd);
     bool saveDataNguoiDung(NguoiDung* nd);
 };
+

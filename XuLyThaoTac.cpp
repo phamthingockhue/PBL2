@@ -17,6 +17,7 @@ void XuLyThaoTac::run() {
         showLoginMenu();
     }
 }
+
 // ==================== MENUS ====================
 
 void XuLyThaoTac::showLoginMenu() {
@@ -99,14 +100,15 @@ void XuLyThaoTac::showMainMenu() {
                 cout << "Ma Chi Tiet GD | Ten Vi | Ten Danh Muc | Mo ta | So Tien GD" << endl;
                 for (int j = dm.dsChiTietGD.get_size() - 1; j >= 0; j--)
                 {
+                    if (dm.dsChiTietGD[j]->getMaGD() != giaoDich.getMaGD())
+                    continue;
                     Vi* vi = dm.dsChiTietGD[j]->getVi();
                     DanhMuc* danhmuc = dm.dsChiTietGD[j]->getDanhMuc();
 
                     string tenVi = (vi != nullptr) ? vi->getTenVi() : "Loi vi";
                     string tenDanhMuc = (danhmuc != nullptr) ? danhmuc->getTenDM() : "Loi danh muc";
 
-                    cout << dm.dsChiTietGD[j]->getMaGD() << " | "
-                        << dm.dsChiTietGD[j]->getMaCTGD() << " | "
+                    cout << dm.dsChiTietGD[j]->getMaCTGD() << " | "
                         << tenVi << " | "
                         << tenDanhMuc << " | "
                         << dm.dsChiTietGD[j]->getMoTa() << " | "
@@ -272,25 +274,27 @@ void XuLyThaoTac::XuLyThemGD() {
         << setfill('0') << setw(2) << (1 + gio.tm_mon) << "-"
         << setfill('0') << setw(2) << gio.tm_mday << endl;
 
-    string tg = getStringInput("Nhap thoi gian giao dich (YYYY-MM-DD): ");
+    string magd = getStringInput("Nhap thoi gian giao dich (YYYY-MM-DD): ");
 
     GiaoDich* gd_cha = nullptr;
     for (size_t i = 0; i < dm.dsGiaoDich.get_size(); ++i) {
-        if (dm.dsGiaoDich[i].getMaGD() == tg) {
+        if (dm.dsGiaoDich[i].getMaGD() == magd) {
             gd_cha = &dm.dsGiaoDich[i];
             break;
         }
     }
     if (gd_cha == nullptr) {
-        GiaoDich gdMoi(tg);
+        GiaoDich gdMoi(magd);
         dm.dsGiaoDich.push_back(gdMoi);
         gd_cha = &dm.dsGiaoDich.back(); 
-        cout << "Tao Giao dich moi cho ngay: " << tg << endl;
+        cout << "Tao Giao dich moi cho ngay: " << magd << endl;
     }
-    else {
-        cout << "Them chi tiet vao Giao dich ngay: " << tg << endl;
+    else 
+    {
+        cout << "Them chi tiet vao Giao dich ngay: " << magd << endl;
     }
-    while (true) {
+    while (true) 
+    {
         cout << "---THEM CHI TIET GIAO DICH---\n";
         cout << "\nDanh sach vi:\n";
         for (size_t i = 0; i < dm.dsVi.get_size(); ++i) {
@@ -299,7 +303,8 @@ void XuLyThaoTac::XuLyThemGD() {
                 << dm.dsVi[i].getSoDu() << " VND\n";
         }
         int maVi = getIntInput("Nhap ma vi: ");
-        if (maVi == 0) return;
+        Vi* vi = timVi(maVi);
+        if (vi == nullptr) { cout << "ma vi khong hop le!" << endl; return; }
 
         cout << "\nDanh sach danh muc:\n";
         for (size_t i = 0; i < dm.dsDanhMuc.get_size(); ++i) {
@@ -308,42 +313,45 @@ void XuLyThaoTac::XuLyThemGD() {
                 << dm.dsDanhMuc[i]->getLoaiDM() << endl;
         }
         int maDM = getIntInput("Nhap ma danh muc: ");
+        DanhMuc* danhmuc = timDanhMuc(maDM);
+        if (danhmuc == nullptr) { cout << "ma danh muc khong hop le!" << endl; return; }
 
         string moTa = getStringInput("Nhap mo ta: ");
 
         long long soTienGD = getIntInput("Nhap so tien giao dich: ");
-        if (soTienGD <= 0) return;
+        if (soTienGD <= 0) 
+        {
+            cout << "So tien khong hop le" << endl;
+            return;
+        }
 
-        Vi* vi = timVi(maVi);
-        DanhMuc* danhmuc = timDanhMuc(maDM);
-
-        ChiTietGD ct(tg, maVi, maDM, moTa, soTienGD);
+        ChiTietGD ct(magd, maVi, maDM, moTa, soTienGD);
         ct.setVi(vi);
         ct.setDM(danhmuc);
-        cout << "o1" << endl;
-        dm.dsChiTietGD.push_back(&ct);
-        gd_cha->capNhatTongTien();
-        cout << "o2" << endl;
-    
-        string loaiDM = timLoaiDM(maDM);
 
+        gd_cha->themChiTiet(ct);
+
+        string loaiDM = timLoaiDM(maDM);
 
         for (int i = 0; i < dm.dsVi.get_size(); i++)
         {
             if (dm.dsVi[i].getMaVi() == maVi)
             {
                 if (loaiDM == "Thu")
+
                 {
                     dm.dsVi[i].setSoDu(dm.dsVi[i].getSoDu() + soTienGD);
                 }
-                else
+                else if (loaiDM == "Chi")
                 {
                     dm.dsVi[i].setSoDu(dm.dsVi[i].getSoDu() - soTienGD);
                 }
+                else
+                {
+                    cout << "loai danh muc khong hop le" << endl;
+                }
             }
         }
-        cout << "o3" << endl;
-        dm.saveDataNguoiDung(nguoiDungHienTai);
         cout << "Ban co muon them giao dich moi khong? (y/n)";
         string xn;
         cin >> xn;
@@ -362,6 +370,10 @@ void XuLyThaoTac::XuLyThemGD() {
             break;
         }
     }
+    gd_cha->capNhatTongTien();
+    dm.dsChiTietGD = gd_cha->getDsChiTiet();
+    dm.saveDataNguoiDung(nguoiDungHienTai);
+    cout << "Luu lai toan bo du lieu..." << endl;
 }
 
 // ==================== HELPERS ====================
@@ -402,7 +414,6 @@ string XuLyThaoTac::timLoaiDM(int maDM)
     for (int i = 0; i < dm.dsDanhMuc.get_size(); i++)
     {
         if (dm.dsDanhMuc[i]->getMaDM() == maDM) return dm.dsDanhMuc[i]->getLoaiDM();
-        break;
     }
     return "";
 }
@@ -415,6 +426,7 @@ Vi* XuLyThaoTac::timVi(int mavi)
     }
     return nullptr;
 }
+
 DanhMuc* XuLyThaoTac::timDanhMuc(int madm)
 {
     for (int i = 0; i < dm.dsDanhMuc.get_size(); i++)
@@ -423,6 +435,3 @@ DanhMuc* XuLyThaoTac::timDanhMuc(int madm)
     }
     return nullptr;
 }
-
-
-
