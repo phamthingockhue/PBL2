@@ -30,7 +30,7 @@ public:
     void setTongChi(long long _tien) { tongChi = _tien; }
     void setDsChiTiet(MyVector<ChiTietGD*> ds) { dsChiTiet = ds; }
 
-    void themChiTiet(ChiTietGD ctgd);
+    void themChiTiet(ChiTietGD* ctgd);
 
     void capNhatTongTien();
 };

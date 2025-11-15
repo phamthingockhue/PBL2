@@ -1,8 +1,8 @@
 #include "GiaoDich.h"
 
-void GiaoDich::themChiTiet(ChiTietGD ctgd)
+void GiaoDich::themChiTiet(ChiTietGD* ctgd)
 {
-	dsChiTiet.push_back(&ctgd);
+	dsChiTiet.push_back(ctgd);
 }
 
 void GiaoDich::capNhatTongTien() 
@@ -22,4 +22,5 @@ void GiaoDich::capNhatTongTien()
             this->tongChi += dsChiTiet[i]->getSoTienGD();
         }
     }
+    cout << "có chay " << endl;
 }
