@@ -28,7 +28,7 @@ private:
     void XuLyDangKy();
     void XuLyThemGD();
     void XuLySuaMK();
-    void XuLyXoaTK();
+    bool XuLyXoaTK();
 
 
     // --- Helpers ---

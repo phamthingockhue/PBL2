@@ -186,13 +186,22 @@ void XuLyThaoTac::showMainMenu() {
         case 7:
         {
             clearScreen();
-            XuLyXoaTK();
+            bool daXoa = XuLyXoaTK();
 
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-
-            clearScreen();
-            break;
+            if (daXoa)
+            {
+                cout << "\nNhan Enter de tro ve man hinh dang nhap...";
+                cin.get();
+                clearScreen();
+                return;
+            }
+            else
+            {
+                cout << "\nNhan Enter de tro ve menu...";
+                cin.get();
+                clearScreen();
+                break;
+            }
         }
         case 0: {
             clearScreen();
@@ -463,7 +472,7 @@ void XuLyThaoTac::XuLySuaMK()
     }
 }
 
-void XuLyThaoTac::XuLyXoaTK()
+bool XuLyThaoTac::XuLyXoaTK()
 {
     string id = nguoiDungHienTai->getID();
     cout << "Nhap mat khau: ";
@@ -493,16 +502,18 @@ void XuLyThaoTac::XuLyXoaTK()
             dm.saveNguoiDung(dm.getBasePath() + "users.txt", dm.dsNguoiDung);
             nguoiDungHienTai = nullptr;
             clearScreen();
-            return;
+            return true;
         }
         else
         {
             cout << "Huy xoa tai khoan.\n";
+            return false;
         }
     }
     else
     {
         cout << "Sai mat khau, yeu cau bi huy bo!!" << endl;
+        return false;
     }
 }
 
