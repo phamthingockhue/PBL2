@@ -35,7 +35,7 @@ GiaoDich* QuanLyChiTietGD::timHoacTaoGDTheoNgay(const string& magd) {
 			return &dm.dsGiaoDich[i];
 	}
 
-	cout << "Tạo mã giao dịch mới cho ngày: " << magd << endl;
+	cout << "Tao ma giao dich cho ngay: " << magd << endl;
 	GiaoDich gdMoi(magd);
 	dm.dsGiaoDich.push_back(gdMoi);
 	return &dm.dsGiaoDich.back();

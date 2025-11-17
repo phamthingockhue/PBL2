@@ -2,8 +2,10 @@
 #include "DataManager.h"
 #include "QuanLyND.h"
 #include "QuanLyChiTietGD.h"
-#include "DanhMuc.h"
 #include "QuanLyVi.h"
+#include "QuanLyGD.h"
+#include "QuanLyDM.h"
+#include "DanhMuc.h"
 #include "GiaoDich.h"
 #include <string>
 
@@ -11,6 +13,9 @@ class XuLyThaoTac {
 private:
     DataManager dm;
     QuanLyND nd;
+    QuanLyGD gd;
+    QuanLyVi vi;
+    QuanLyDM dmuc;
     NguoiDung* nguoiDungHienTai = nullptr;
 
     // --- Menus ---
@@ -22,8 +27,8 @@ private:
     void XuLyDangNhap();
     void XuLyDangKy();
     void XuLyThemGD();
-    //void XuLyXemDSGD();
-    //void XuLyXemThongKe();
+    void XuLySuaMK();
+    void XuLyXoaTK();
 
 
     // --- Helpers ---
@@ -32,9 +37,6 @@ private:
     //wait->enter
     //display danhsach
     void clearScreen();
-    string timLoaiDM(int);
-    Vi* timVi(int);
-    DanhMuc* timDanhMuc(int);
 public:
     XuLyThaoTac();
     void run();

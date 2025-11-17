@@ -33,5 +33,6 @@ public:
     void themChiTiet(ChiTietGD* ctgd);
 
     void capNhatTongTien();
+
 };
 

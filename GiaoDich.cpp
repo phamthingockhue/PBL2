@@ -22,5 +22,4 @@ void GiaoDich::capNhatTongTien()
             this->tongChi += dsChiTiet[i]->getSoTienGD();
         }
     }
-    cout << "có chay " << endl;
 }
