@@ -47,6 +47,29 @@ void XuLyThaoTac::run()
 // ==================== MENUS ====================
 
 void XuLyThaoTac::showLoginMenu() {
+    cout << string(65, '=') << endl;
+    cout << "              PBL2: DU AN CO SO LAP TRINH              " << endl;
+    cout << "           DE TAI: UNG DUNG QUAN LY CHI TIEU           " << endl;
+    cout << string(65, '=') << endl;
+
+    cout << "| " << left << setw(30) << "Ho va Ten"
+        << " | " << left << setw(15) << "MSSV"
+        << " | " << left << setw(10) << "Lop" << " |" << endl;
+
+    cout << "| " << string(30, '-')
+        << " | " << string(15, '-')
+        << " | " << string(10, '-') << " |" << endl;
+
+    cout << "| " << left << setw(30) << "Pham Thi Ngoc Khue"
+        << " | " << left << setw(15) << "102240375"
+        << " | " << left << setw(10) << "99B" << " |" << endl;
+
+    cout << "| " << left << setw(30) << "Dau Thuy Ngan"
+        << " | " << left << setw(15) << "102240382"
+        << " | " << left << setw(10) << "99B" << " |" << endl;
+
+    cout << string(65, '=') << endl;
+
     string line_sep = "+-" + string(30, '-') + "-+";
     cout << line_sep << endl;
     cout << "| " << "       QUAN LY CHI TIEU       " << " |" << endl;
@@ -185,7 +208,6 @@ void XuLyThaoTac::showMainMenu() {
                 // Gọi hàm xử lý logic (Gộp hoặc Đổi tên)
                 if (qlGD->doiNgayGiaoDich(maGD, newID)) {
                     qlCTGD->suaMaGiaoDich_CTGD(maGD, newID);
-                    //qlGD->capNhatSauKhiDoiMa(maGD, newID);
                     dm.saveDataNguoiDung(nguoiDungHienTai);
                     cout << "\n(v) Cap nhat thanh cong!\n";
                 }
@@ -216,7 +238,7 @@ void XuLyThaoTac::showMainMenu() {
 
             ChiTietGD* ct = qlCTGD->timCTGD(idCanSua);
 
-            if (ct == nullptr) cout << "Khong tim thay CTGD co ma " << idCanSua << "\n";
+            if (ct == nullptr) cout << "Khong tim thay CTGD co ma: " << idCanSua << "\n";
             else {
                 string oldMaGD = ct->getMaGD();
                 long long oldSoTien = ct->getSoTienGD();
@@ -246,25 +268,43 @@ void XuLyThaoTac::showMainMenu() {
                         //Cập nhật số tiền mới vào
                         qlVi->capNhatSoDu(maVi, newSoTien, loaiDM);
                     }
-                    if (oldMaGD != newMaGD)
-                    {
-                        GiaoDich* newGD = qlGD->tim_GD(newMaGD);
-                        if (newGD == nullptr) {
-                            newGD = qlGD->taoGD(newMaGD);
+
+                    MyVector<string> daysToRefresh;
+                    daysToRefresh.push_back(oldMaGD);
+                    if (oldMaGD != newMaGD) {
+                        daysToRefresh.push_back(newMaGD);
+                        if (qlGD->tim_GD(newMaGD) == nullptr) {
+                            qlGD->taoGD(newMaGD);
                             cout << "(Tu dong tao giao dich moi cho ngay " << newMaGD << ")\n";
                         }
-                        GiaoDich* oldGD = qlGD->tim_GD(oldMaGD);
-                        if (oldGD) {
-                            oldGD->xoaCTGD(ct);       // Rút khỏi ngày cũ
-                            oldGD->capNhatTongTien(); // Tính lại tổng ngày cũ
-                        }
-                        newGD->themChiTiet(ct);       // Nhét vào ngày mới
-                        newGD->capNhatTongTien();     // Tính lại tổng ngày mới
                     }
-                    else
+
+                    for (int k = 0; k < daysToRefresh.get_size(); k++)
                     {
-                        GiaoDich* curGD = qlGD->tim_GD(oldMaGD);
-                        if (curGD) curGD->capNhatTongTien();
+                        string targetDate = daysToRefresh[k];
+                        GiaoDich* gdTarget = qlGD->tim_GD(targetDate);
+
+                        if (gdTarget)
+                        {
+                            gdTarget->getDsChiTiet().clear();
+
+                            for (int i = 0; i < dm.dsChiTietGD.get_size(); i++)
+                            {
+                                if (dm.dsChiTietGD[i]->getMaGD() == targetDate)
+                                {
+                                    gdTarget->themChiTiet(dm.dsChiTietGD[i]);
+                                }
+                            }
+
+                            gdTarget->capNhatTongTien();
+                        }
+                    }
+
+                    if (oldMaGD != newMaGD) {
+                        GiaoDich* oldGD = qlGD->tim_GD(oldMaGD);
+                        if (oldGD && oldGD->getTongThu() == 0 && oldGD->getTongChi() == 0) {
+                            qlGD->xoaGiaoDich(oldMaGD);
+                        }
                     }
                     dm.saveDataNguoiDung(nguoiDungHienTai);
                     cout << "\n(v) CAP NHAT THANH CONG!\n";
