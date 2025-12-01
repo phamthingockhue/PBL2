@@ -1,21 +1,22 @@
 #pragma once
+
 #include "DataManager.h"
 #include "QuanLyND.h"
-#include "QuanLyChiTietGD.h"
+#include "QuanLyCTGD.h"
 #include "QuanLyVi.h"
 #include "QuanLyGD.h"
 #include "QuanLyDM.h"
-#include "DanhMuc.h"
-#include "GiaoDich.h"
 #include <string>
 
 class XuLyThaoTac {
 private:
     DataManager dm;
-    QuanLyND nd;
-    QuanLyGD gd;
-    QuanLyVi vi;
-    QuanLyDM dmuc;
+
+    QuanLyND* qlND;
+    QuanLyDM* qlDM;
+    QuanLyVi* qlVi;
+    QuanLyGD* qlGD;
+    QuanLyCTGD* qlCTGD;
     NguoiDung* nguoiDungHienTai = nullptr;
 
     // --- Menus ---
@@ -32,12 +33,20 @@ private:
 
 
     // --- Helpers ---
-    int getIntInput(const std::string& prompt);
-    std::string getStringInput(const std::string& prompt);
+    // int getIntInput(const string& prompt);
+    // string getStringInput(const string& prompt);
+    long long inputLong(string prompt, long long oldVal);
+    string inputString(string prompt, string oldval);
+
+    template <typename T>
+    static T getInput(const string& prompt);
     //wait->enter
     //display danhsach
     void clearScreen();
 public:
     XuLyThaoTac();
+    ~XuLyThaoTac();
     void run();
 };
+template<>
+string XuLyThaoTac::getInput<string>(const string& prompt);

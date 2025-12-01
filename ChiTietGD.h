@@ -1,8 +1,8 @@
 #pragma once
 #include <string>
+#include "Vi.h"
+#include "DanhMuc.h"
 using namespace std;
-class Vi;
-class DanhMuc;
 
 class ChiTietGD {
 private:
@@ -54,7 +54,6 @@ public:
     DanhMuc* getDanhMuc() { return danhMuc; }
 
     void setMaGD(const string& magd) { maGD = magd; }
-    void setMaCTGD(int _maCTGD) { maCTGD = _maCTGD; }
     void setMaVi(int _mavi) { maVi = _mavi; }
     void setMaDM(int _madm) { maDM = _madm; }
     void setMota(string _mota) { moTa = _mota; }

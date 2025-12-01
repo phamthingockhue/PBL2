@@ -19,7 +19,4 @@ public:
     long long getSoDu() { return soDu; }
 
     void setSoDu(long long sodu) { soDu = sodu; }
-
-    void congTien(long long tien) { soDu += tien; }
-    void truTien(long long tien) { soDu -= tien; }
 };

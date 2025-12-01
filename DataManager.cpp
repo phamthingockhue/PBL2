@@ -1,4 +1,4 @@
-#include "DataManager.h"
+﻿#include "DataManager.h"
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -44,6 +44,9 @@ void DataManager::loadNguoiDung(const string& tenFile, MyVector<NguoiDung>& dsNg
     string line;
     while (getline(fin, line)) {
         if (line.empty()) continue;
+        if (!line.empty() && line.back() == '\r') {
+            line.pop_back();
+        }
         stringstream ss(line);
         string id, ten, matKhau;
         getline(ss, id, ',');
@@ -127,6 +130,7 @@ void DataManager::loadChiTietGD(const string& tenFile, MyVector<ChiTietGD*>& dsC
         getline(ss, soTienGDStr, ','); long long soTienGD = stoll(soTienGDStr);
 
         dsChiTietGD.push_back(new ChiTietGD(maGD, maCTGD, maVi, maDM, moTa, soTienGD));
+
     }
     fin.close();
 }
@@ -169,6 +173,7 @@ void DataManager::saveDanhMuc(const string& tenFile, MyVector<DanhMuc*>& dsDanhM
     fout.close();
 }
 void DataManager::saveGiaoDich(const string& tenFile, MyVector<GiaoDich>& dsGiaoDich) {
+    sapXepGD();
     ofstream fout(tenFile, ios::trunc);
     if (!fout.is_open()) return;
     for (size_t i = 0; i < dsGiaoDich.get_size(); i++) {
@@ -181,6 +186,7 @@ void DataManager::saveGiaoDich(const string& tenFile, MyVector<GiaoDich>& dsGiao
     fout.close();
 }
 void DataManager::saveChiTietGD(const string& tenFile, MyVector<ChiTietGD*>& dsChiTietGD) {
+    sapXepChiTietGD();
     ofstream fout(tenFile, ios::trunc);
     if (!fout.is_open()) return;
     for (size_t i = 0; i < dsChiTietGD.get_size(); i++) {
@@ -209,6 +215,7 @@ bool DataManager::loadDataNguoiDung(NguoiDung* nd) {
     loadDanhMuc(userFolder + "danhmuc.txt", dsDanhMuc);
     loadGiaoDich(userFolder + "giaodich.txt", dsGiaoDich);
     loadChiTietGD(userFolder + "chitietgd.txt", dsChiTietGD);
+    linkDuLieu();
     return true;
 }
 
@@ -222,3 +229,62 @@ bool DataManager::saveDataNguoiDung(NguoiDung* nd) {
     return true;
 }
 
+void DataManager::linkDuLieu() {
+    for (size_t i = 0; i < dsChiTietGD.get_size(); i++) {
+        ChiTietGD* ct = dsChiTietGD[i];
+
+        for (size_t j = 0; j < dsVi.get_size(); j++) {
+            if (dsVi[j].getMaVi() == ct->getMaVi()) {
+                ct->setVi(&dsVi[j]);
+                break;
+            }
+        }
+        for (size_t k = 0; k < dsDanhMuc.get_size(); k++) {
+            // Giả sử class DanhMuc có hàm getID() hoặc getMaDM()
+            if (dsDanhMuc[k]->getMaDM() == ct->getMaDM()) {
+                ct->setDM(dsDanhMuc[k]);
+                break;
+            }
+        }
+    }
+}
+
+void DataManager::sapXepChiTietGD() {
+    int n = dsChiTietGD.get_size();
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            string date1 = dsChiTietGD[i]->getMaGD();
+            string date2 = dsChiTietGD[j]->getMaGD();
+
+            int id1 = dsChiTietGD[i]->getMaCTGD();
+            int id2 = dsChiTietGD[j]->getMaCTGD();
+
+            bool canSwap = false;
+
+            if (date1 < date2) {
+                canSwap = true;
+            }
+            else if (date1 == date2 && id1 > id2) {
+                canSwap = true;
+            }
+            if (canSwap) {
+                ChiTietGD* temp = dsChiTietGD[i];
+                dsChiTietGD[i] = dsChiTietGD[j];
+                dsChiTietGD[j] = temp;
+            }
+        }
+    }
+}
+
+void DataManager::sapXepGD() {
+    int n = dsGiaoDich.get_size();
+    for (int i = 0; i < n - 1; i++) {
+        for (int j = i + 1; j < n; j++) {
+            if (dsGiaoDich[i].getMaGD() < dsGiaoDich[j].getMaGD()) {
+                GiaoDich temp = dsGiaoDich[i];
+                dsGiaoDich[i] = dsGiaoDich[j];
+                dsGiaoDich[j] = temp;
+            }
+        }
+    }
+}

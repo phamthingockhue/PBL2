@@ -30,9 +30,6 @@ public:
     MyVector<GiaoDich> dsGiaoDich;
     MyVector<ChiTietGD*> dsChiTietGD;
 
-
-
-
     void setBasePath(const string& path);
     string getBasePath() const;
 
@@ -40,7 +37,21 @@ public:
 
     DataManager() = default;
     DataManager(const string& _basePath) : basePath(_basePath) {}
-    ~DataManager() {};
+    ~DataManager() {
+        for (int i = 0; i < dsDanhMuc.get_size(); i++) {
+            if (dsDanhMuc[i] != nullptr) {
+                delete dsDanhMuc[i];
+            }
+        }
+        for (int i = 0; i < dsChiTietGD.get_size(); i++) {
+            if (dsChiTietGD[i] != nullptr) {
+                delete dsChiTietGD[i];
+            }
+        }
+    }
+
+    void sapXepChiTietGD();
+    void sapXepGD();
 
     void loadNguoiDung(const string& tenFile, MyVector<NguoiDung>& dsNguoiDung);
     void loadVi(const string& tenFile, MyVector<Vi>& dsVi);
@@ -56,5 +67,6 @@ public:
 
     bool loadDataNguoiDung(NguoiDung* nd);
     bool saveDataNguoiDung(NguoiDung* nd);
-};
 
+    void linkDuLieu();
+};

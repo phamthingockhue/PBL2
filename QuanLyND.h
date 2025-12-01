@@ -1,32 +1,21 @@
 #pragma once
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <filesystem>
 #include "MyVector.h"
 #include "NguoiDung.h"
-
 
 class QuanLyND
 {
 private:
-    MyVector<NguoiDung> dsNguoiDung;
+    MyVector<NguoiDung>* dsNguoiDung;
 public:
-    QuanLyND() {}
+    QuanLyND(MyVector<NguoiDung>* dsnd)
+    {
+        dsNguoiDung = dsnd;
+    }
     ~QuanLyND() {}
-    QuanLyND(MyVector<NguoiDung>& dsNguoiDung)
-        : dsNguoiDung(dsNguoiDung)
-    {}
-    NguoiDung* xacThuc(const string&, const string&);
-    bool DangKy(const string&, const string& , const string&);
+    NguoiDung* xacThuc(const string& userid, const string& password);
+    bool DangKy(const string& userid, const string& name, const string& password);
     string AnMK();
-    int KiemTraMK(const string&, const string&);
-    void DoiMK(int, const string&);
-    void XoaTaiKhoan(int);
-    MyVector<NguoiDung> getDsNguoiDung() const {
-        return dsNguoiDung;
-    }
-    void setDsNguoiDung(MyVector<NguoiDung> ds) {
-        dsNguoiDung = ds;
-    }
+    int KiemTraMK(const string& userid, const string& password);
+    void DoiMK(int index, const string& mk);
+    void XoaTaiKhoan(int index);
 };
