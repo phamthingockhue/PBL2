@@ -16,7 +16,7 @@ public:
 		cout << line_sep << endl;
 		cout << "| " << left << setw(7) << "Ma Vi" << " | "
 			<< left << setw(20) << "Ten Vi" << " | "
-			<< left << setw(18) << "So Du Vi (VND)" << " |" << endl;
+			<< left << setw(18) << "So Du Vi (kVND)" << " |" << endl;
 		cout << line_sep << endl;
 
 		for (int i = 0; i < dsVi->get_size(); ++i) {

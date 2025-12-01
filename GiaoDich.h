@@ -19,7 +19,24 @@ public:
     GiaoDich(const string& _maGD, long long _tongThu, long long _tongChi)
         : maGD(_maGD), tongThu(_tongThu), tongChi(_tongChi)
     {}
+    GiaoDich(const GiaoDich& other)
+    {
+        maGD = other.maGD;
+        tongThu = other.tongThu;
+        tongChi = other.tongChi;
+        dsChiTiet = other.dsChiTiet;
+    }
 
+    GiaoDich& operator=(const GiaoDich& other)
+    {
+        if (this != &other) {
+            maGD = other.maGD;
+            tongThu = other.tongThu;
+            tongChi = other.tongChi;
+            dsChiTiet = other.dsChiTiet;
+        }
+        return *this;
+    }
     string getMaGD() { return maGD; }
     long long getTongThu() { return tongThu; }
     long long getTongChi() { return tongChi; }
