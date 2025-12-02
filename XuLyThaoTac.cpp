@@ -215,10 +215,9 @@ void XuLyThaoTac::showMainMenu() {
                     cout << "\n(!) Cap nhat that bai!\n";
                 }
             }
-
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
             cout << "\nNhan Enter de tro ve menu...";
             cin.get();
-
             clearScreen();
             break;
         }
