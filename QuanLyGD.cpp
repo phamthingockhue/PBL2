@@ -51,15 +51,6 @@ int QuanLyGD::tonTaiGiaoDich(const string& maGD)
 	return -1;
 }
 
-bool QuanLyGD::timGD(const string& magd)
-{
-	for (int i = 0; i < dsGiaoDich->get_size(); i++)
-	{
-		if ((*dsGiaoDich)[i].getMaGD() == magd) return true;
-	}
-	return false;
-}
-
 bool QuanLyGD::doiNgayGiaoDich(const string& oldID, const string& newID) 
 {
 	if (oldID == newID) {

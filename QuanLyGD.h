@@ -31,6 +31,5 @@ public:
 	int tonTaiGiaoDich(const string& maGD);
 	bool doiNgayGiaoDich(const string& oldID, const string& newID);
 	void thongKeTheoThang(string);
-	bool timGD(const string& magd);
 	GiaoDich* tim_GD(const string& magd);
 };

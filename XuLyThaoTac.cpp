@@ -37,7 +37,7 @@ XuLyThaoTac::~XuLyThaoTac()
     delete qlCTGD;
 }
 
-void XuLyThaoTac::run() 
+void XuLyThaoTac::run()
 {
     while (true) {
         showLoginMenu();
@@ -114,8 +114,10 @@ void XuLyThaoTac::showMainMenu() {
         cout << "| " << left << setw(40) << " 6. Xem chi tiet giao dich theo ngay" << " | " << endl;
         cout << "| " << left << setw(40) << " 7. Chinh sua ngay giao dich" << " | " << endl;
         cout << "| " << left << setw(40) << " 8. Chinh sua chi tiet giao dich" << " | " << endl;
-        cout << "| " << left << setw(40) << " 9. Thay doi mat khau" << " |" << endl;
-        cout << "| " << left << setw(40) << " 10. Xoa tai khoan" << " |" << endl;
+        cout << "| " << left << setw(40) << " 9. Xoa giao dich theo ngay" << " | " << endl;
+        cout << "| " << left << setw(40) << " 10. Xoa chi tiet giao dich" << " | " << endl;
+        cout << "| " << left << setw(40) << " 11. Thay doi mat khau" << " |" << endl;
+        cout << "| " << left << setw(40) << " 12. Xoa tai khoan" << " |" << endl;
         cout << "| " << left << setw(40) << " 0. Dang xuat" << " |" << endl;
         cout << line_sep << endl;
         cout << "Chon: ";
@@ -191,31 +193,7 @@ void XuLyThaoTac::showMainMenu() {
         case 7:
         {
             clearScreen();
-            cout << "\n---CHINH SUA NGAY GIAO DICH---\n";
-            string maGD;
-            cout << "\nNhap ma giao dich can sua (YYYYMMDD): ";
-            cin >> maGD;
-
-            // Kiểm tra mã cũ có tồn tại không
-            if (qlGD->timGD(maGD) == false) {
-                cout << "(!) Loi: Khong tim thay giao dich ngay " << maGD << "!\n";
-            }
-            else {
-                string newID;
-                cout << "Nhap ma giao dich moi (yyyymmdd): ";
-                cin >> newID;
-
-                // Gọi hàm xử lý logic (Gộp hoặc Đổi tên)
-                if (qlGD->doiNgayGiaoDich(maGD, newID)) {
-                    qlCTGD->suaMaGiaoDich_CTGD(maGD, newID);
-                    dm.saveDataNguoiDung(nguoiDungHienTai);
-                    cout << "\n(v) Cap nhat thanh cong!\n";
-                }
-                else {
-                    cout << "\n(!) Cap nhat that bai!\n";
-                }
-            }
-            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            XuLyChinhSuaGD();
             cout << "\nNhan Enter de tro ve menu...";
             cin.get();
             clearScreen();
@@ -224,95 +202,7 @@ void XuLyThaoTac::showMainMenu() {
         case 8:
         {
             clearScreen();
-            cout << "\n--- CHINH SUA CHI TIET GIAO DICH ---\n";
-
-            int idCanSua;
-            cout << "Nhap Ma CTGD can sua: ";
-            if (!(cin >> idCanSua)) {
-                cout << "Loi: Vui long nhap dung dinh dang so!\n";
-                cin.clear(); cin.ignore(10000, '\n');
-                cout << "\nNhan Enter de quay lai..."; cin.get(); break;
-            }
-            cin.ignore();
-
-            ChiTietGD* ct = qlCTGD->timCTGD(idCanSua);
-
-            if (ct == nullptr) cout << "Khong tim thay CTGD co ma: " << idCanSua << "\n";
-            else {
-                string oldMaGD = ct->getMaGD();
-                long long oldSoTien = ct->getSoTienGD();
-                int maVi = ct->getMaVi();
-                DanhMuc* dmuc = ct->getDanhMuc();
-                string loaiDM = (dmuc) ? dmuc->getLoaiDM() : "";
-                cout << "\n(Huong dan: Nhan Enter neu muon GIU NGUYEN gia tri trong ngoac)\n";
-                cout << "--------------------------------------------------\n";
-
-                string newMaGD = inputString("-> Ngay (yyyymmdd)", ct->getMaGD());
-
-                long long newSoTien = inputLong("-> So tien (VND)", ct->getSoTienGD());
-
-                string newMoTa = inputString("-> Mo ta", ct->getMoTa());
-
-                cout << "--------------------------------------------------\n";
-
-                // Gọi hàm xử lý
-                if (qlCTGD->suaCTGD(idCanSua, newMaGD, newMoTa, newSoTien))
-                {
-                    if (oldSoTien != newSoTien && !loaiDM.empty())
-                    {
-                        string loai = (loaiDM == "Thu") ? "Chi" : "Thu";
-                        //Cập nhật số tiền cũ ra
-                        qlVi->capNhatSoDu(maVi, oldSoTien, loai);
-
-                        //Cập nhật số tiền mới vào
-                        qlVi->capNhatSoDu(maVi, newSoTien, loaiDM);
-                    }
-
-                    MyVector<string> daysToRefresh;
-                    daysToRefresh.push_back(oldMaGD);
-                    if (oldMaGD != newMaGD) {
-                        daysToRefresh.push_back(newMaGD);
-                        if (qlGD->tim_GD(newMaGD) == nullptr) {
-                            qlGD->taoGD(newMaGD);
-                            cout << "(Tu dong tao giao dich moi cho ngay " << newMaGD << ")\n";
-                        }
-                    }
-
-                    for (int k = 0; k < daysToRefresh.get_size(); k++)
-                    {
-                        string targetDate = daysToRefresh[k];
-                        GiaoDich* gdTarget = qlGD->tim_GD(targetDate);
-
-                        if (gdTarget)
-                        {
-                            gdTarget->getDsChiTiet().clear();
-
-                            for (int i = 0; i < dm.dsChiTietGD.get_size(); i++)
-                            {
-                                if (dm.dsChiTietGD[i]->getMaGD() == targetDate)
-                                {
-                                    gdTarget->themChiTiet(dm.dsChiTietGD[i]);
-                                }
-                            }
-
-                            gdTarget->capNhatTongTien();
-                        }
-                    }
-
-                    if (oldMaGD != newMaGD) {
-                        GiaoDich* oldGD = qlGD->tim_GD(oldMaGD);
-                        if (oldGD && oldGD->getTongThu() == 0 && oldGD->getTongChi() == 0) {
-                            qlGD->xoaGiaoDich(oldMaGD);
-                        }
-                    }
-                    dm.saveDataNguoiDung(nguoiDungHienTai);
-                    cout << "\n(v) CAP NHAT THANH CONG!\n";
-                }
-                else
-                {
-                    cout << "\n(v) CAP NHAT THAT BAI!\n";
-                }
-            }
+            XuLyChinhSuaCTGD();
 
             cout << "\nNhan Enter de tro ve menu...";
             cin.get();
@@ -321,7 +211,29 @@ void XuLyThaoTac::showMainMenu() {
             break;
 
         }
+
         case 9:
+        {
+            clearScreen();
+            XuLyXoaGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+
+            clearScreen();
+            break;
+        }
+        case 10:
+        {
+            clearScreen();
+            XuLyXoaCTGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+
+            clearScreen();
+            break;
+        }
+
+        case 11:
         {
             clearScreen();
             XuLySuaMK();
@@ -332,7 +244,7 @@ void XuLyThaoTac::showMainMenu() {
             clearScreen();
             break;
         }
-        case 10:
+        case 12:
         {
             clearScreen();
             bool daXoa = XuLyXoaTK();
@@ -584,6 +496,214 @@ bool XuLyThaoTac::XuLyXoaTK()
     {
         cout << "Sai mat khau, yeu cau bi huy bo!!" << endl;
         return false;
+    }
+}
+
+void XuLyThaoTac::XuLyChinhSuaGD()
+{
+    cout << "\n---CHINH SUA NGAY GIAO DICH---\n";
+    string maGD;
+    cout << "\nNhap ma giao dich can sua (YYYYMMDD): ";
+    cin >> maGD;
+
+    // Kiểm tra mã cũ có tồn tại không
+    if (qlGD->tim_GD(maGD) == nullptr) {
+        cout << "(!) Loi: Khong tim thay giao dich ngay " << maGD << "!\n";
+    }
+    else {
+        string newID;
+        cout << "Nhap ma giao dich moi (yyyymmdd): ";
+        cin >> newID;
+
+        // Gọi hàm xử lý logic (Gộp hoặc Đổi tên)
+        if (qlGD->doiNgayGiaoDich(maGD, newID)) {
+            qlCTGD->suaMaGiaoDich_CTGD(maGD, newID);
+            dm.saveDataNguoiDung(nguoiDungHienTai);
+            cout << "\n(v) Cap nhat thanh cong!\n";
+        }
+        else {
+            cout << "\n(!) Cap nhat that bai!\n";
+        }
+    }
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+}
+
+void XuLyThaoTac::XuLyChinhSuaCTGD()
+{
+    cout << "\n--- CHINH SUA CHI TIET GIAO DICH ---\n";
+
+    int idCanSua;
+    cout << "Nhap Ma CTGD can sua: ";
+    if (!(cin >> idCanSua)) {
+        cout << "Loi: Vui long nhap dung dinh dang so!\n";
+        cin.clear(); cin.ignore(10000, '\n');
+        cout << "\nNhan Enter de quay lai..."; cin.get(); return;
+    }
+    cin.ignore();
+
+    ChiTietGD* ct = qlCTGD->timCTGD(idCanSua);
+
+    if (ct == nullptr) cout << "Khong tim thay CTGD co ma: " << idCanSua << "\n";
+    else {
+        string oldMaGD = ct->getMaGD();
+        long long oldSoTien = ct->getSoTienGD();
+        int maVi = ct->getMaVi();
+        DanhMuc* dmuc = ct->getDanhMuc();
+        string loaiDM = (dmuc) ? dmuc->getLoaiDM() : "";
+        cout << "\n(Huong dan: Nhan Enter neu muon GIU NGUYEN gia tri trong ngoac)\n";
+        cout << "--------------------------------------------------\n";
+
+        string newMaGD = inputString("-> Ngay (yyyymmdd)", ct->getMaGD());
+
+        long long newSoTien = inputLong("-> So tien (VND)", ct->getSoTienGD());
+
+        string newMoTa = inputString("-> Mo ta", ct->getMoTa());
+
+        cout << "--------------------------------------------------\n";
+
+        // Gọi hàm xử lý
+        if (qlCTGD->suaCTGD(idCanSua, newMaGD, newMoTa, newSoTien))
+        {
+            if (oldSoTien != newSoTien && !loaiDM.empty())
+            {
+                string loai = (loaiDM == "Thu") ? "Chi" : "Thu";
+                //Cập nhật số tiền cũ ra
+                qlVi->capNhatSoDu(maVi, oldSoTien, loai);
+
+                //Cập nhật số tiền mới vào
+                qlVi->capNhatSoDu(maVi, newSoTien, loaiDM);
+            }
+
+            MyVector<string> daysToRefresh;
+            daysToRefresh.push_back(oldMaGD);
+            if (oldMaGD != newMaGD) {
+                daysToRefresh.push_back(newMaGD);
+                if (qlGD->tim_GD(newMaGD) == nullptr) {
+                    qlGD->taoGD(newMaGD);
+                    cout << "(Tu dong tao giao dich moi cho ngay " << newMaGD << ")\n";
+                }
+            }
+
+            for (int k = 0; k < daysToRefresh.get_size(); k++)
+            {
+                string targetDate = daysToRefresh[k];
+                GiaoDich* gdTarget = qlGD->tim_GD(targetDate);
+
+                if (gdTarget)
+                {
+                    gdTarget->getDsChiTiet().clear();
+
+                    for (int i = 0; i < dm.dsChiTietGD.get_size(); i++)
+                    {
+                        if (dm.dsChiTietGD[i]->getMaGD() == targetDate)
+                        {
+                            gdTarget->themChiTiet(dm.dsChiTietGD[i]);
+                        }
+                    }
+
+                    gdTarget->capNhatTongTien();
+                }
+            }
+
+            if (oldMaGD != newMaGD) {
+                GiaoDich* oldGD = qlGD->tim_GD(oldMaGD);
+                if (oldGD && oldGD->getTongThu() == 0 && oldGD->getTongChi() == 0) {
+                    qlGD->xoaGiaoDich(oldMaGD);
+                }
+            }
+            dm.saveDataNguoiDung(nguoiDungHienTai);
+            cout << "\n(v) CAP NHAT THANH CONG!\n";
+        }
+        else
+        {
+            cout << "\n(v) CAP NHAT THAT BAI!\n";
+        }
+    }
+}
+
+void XuLyThaoTac::XuLyXoaGD()
+{
+    string magd;
+    cout << "\n--- XOA GIAO DICH THEO NGAY ---\n";
+    cout << "Nhap ngay giao dich can xoa (yyyymmdd): ";
+    getline(cin, magd);
+    if (qlGD->tim_GD(magd) == nullptr)
+    {
+        cout << "Khong tim thay ma giao dich tren!" << endl;
+        cout << "\nNhan Enter de tro ve menu...";
+        cin.get();
+
+        clearScreen();
+        return;
+    }
+    else
+    {
+        qlGD->xoaGiaoDich(magd);
+        for (int i = dm.dsChiTietGD.get_size() - 1; i >= 0; i--)
+        {
+            if (dm.dsChiTietGD[i]->getMaGD() == magd)
+            {
+                int index = dm.dsChiTietGD[i]->getMaCTGD();
+
+                string loai_tam = dm.dsChiTietGD[i]->getDanhMuc()->getLoaiDM();
+                string loai = (loai_tam == "Thu") ? "Chi" : "Thu";
+
+                qlVi->capNhatSoDu(dm.dsChiTietGD[i]->getMaVi(), dm.dsChiTietGD[i]->getSoTienGD(), loai);
+                qlCTGD->xoaCTGD(index);
+            }
+        }
+        cout << "Da xoa giao dich" << endl;
+        dm.saveDataNguoiDung(nguoiDungHienTai);
+    }
+}
+
+void XuLyThaoTac::XuLyXoaCTGD()
+{
+    int mact;
+    cout << "\n--- XOA CHI TIET GIAO DICH ---\n";
+    cout << "Nhap ma chi tiet giao dich can xoa: ";
+    cin >> mact;
+    ChiTietGD* ct = qlCTGD->timCTGD(mact);
+    if (ct == nullptr)
+    {
+        cout << "Khong tim thay ma chi tiet giao dich tren" << endl;
+        cout << "\nNhan Enter de tro ve menu...";
+        cin.get();
+
+        clearScreen();
+        return;
+    }
+    else
+    {
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        long long soTien = ct->getSoTienGD();
+        int maVi = ct->getMaVi();
+        string loaiHienTai = ct->getDanhMuc()->getLoaiDM();
+        string loaiDaoNguoc = (loaiHienTai == "Thu") ? "Chi" : "Thu";
+
+        qlVi->capNhatSoDu(maVi, soTien, loaiDaoNguoc);
+        string maGDCha = ct->getMaGD();
+
+        qlCTGD->xoaCTGD(mact);
+        cout << "Xoa chi tiet thanh cong!" << endl;
+
+        GiaoDich* gdCha = qlGD->tim_GD(maGDCha);
+        if (gdCha != nullptr) {
+            gdCha->getDsChiTiet().clear();
+
+            for (int i = 0; i < dm.dsChiTietGD.get_size(); i++) {
+                if (dm.dsChiTietGD[i]->getMaGD() == maGDCha) {
+                    gdCha->themChiTiet(dm.dsChiTietGD[i]);
+                }
+            }
+            gdCha->capNhatTongTien();
+
+            if (gdCha->getTongThu() == 0 && gdCha->getTongChi() == 0) {
+                qlGD->xoaGiaoDich(maGDCha);
+                cout << "(Ngay " << maGDCha << " da het du lieu nen tu dong xoa khoi danh sach)\n";
+            }
+        }
+        dm.saveDataNguoiDung(nguoiDungHienTai);
     }
 }
 

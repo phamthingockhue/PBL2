@@ -30,6 +30,10 @@ private:
     void XuLyThemGD();
     void XuLySuaMK();
     bool XuLyXoaTK();
+    void XuLyChinhSuaGD();
+    void XuLyChinhSuaCTGD();
+    void XuLyXoaGD();
+    void XuLyXoaCTGD();
 
 
     // --- Helpers ---
