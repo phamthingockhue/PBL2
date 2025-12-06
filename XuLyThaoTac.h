@@ -44,8 +44,6 @@ private:
 
     template <typename T>
     static T getInput(const string& prompt);
-    //wait->enter
-    //display danhsach
     void clearScreen();
 public:
     XuLyThaoTac();
