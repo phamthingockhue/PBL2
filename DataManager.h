@@ -22,13 +22,19 @@ class DataManager
 {
 private:
     string basePath;
-
-public:
+    
     MyVector<NguoiDung> dsNguoiDung;
     MyVector<Vi> dsVi;
     MyVector<DanhMuc*> dsDanhMuc;
     MyVector<GiaoDich> dsGiaoDich;
     MyVector<ChiTietGD*> dsChiTietGD;
+
+public:
+    MyVector<NguoiDung>& getDsNguoiDung() { return dsNguoiDung; }
+    MyVector<Vi>& getDsVi() { return dsVi; }
+    MyVector<DanhMuc*>& getDsDanhMuc() { return dsDanhMuc; }
+    MyVector<GiaoDich>& getDsGiaoDich() { return dsGiaoDich; }
+    MyVector<ChiTietGD*>& getDsChiTietGD() { return dsChiTietGD; }
 
     void setBasePath(const string& path);
     string getBasePath() const;
@@ -41,11 +47,13 @@ public:
         for (int i = 0; i < dsDanhMuc.get_size(); i++) {
             if (dsDanhMuc[i] != nullptr) {
                 delete dsDanhMuc[i];
+                dsDanhMuc[i] = nullptr;
             }
         }
         for (int i = 0; i < dsChiTietGD.get_size(); i++) {
             if (dsChiTietGD[i] != nullptr) {
                 delete dsChiTietGD[i];
+                dsChiTietGD[i] = nullptr;
             }
         }
     }
