@@ -44,6 +44,116 @@ void XuLyThaoTac::run()
     }
 }
 
+// ==================== HELPER FUNCTIONS ====================
+
+bool XuLyThaoTac::checkEscPressed() {
+    if (_kbhit()) {
+        char ch = _getch();
+        if (ch == 27) { // ESC key
+            return true;
+        }
+    }
+    return false;
+}
+
+bool XuLyThaoTac::kiemTraNgayHopLe(const string& ngay) {
+    if (ngay.length() != 8) return false;
+    for (char c : ngay) {
+        if (!isdigit(c)) return false;
+    }
+    int year = stoi(ngay.substr(0, 4));
+    int month = stoi(ngay.substr(4, 2));
+    int day = stoi(ngay.substr(6, 2));
+    
+    if (year<=0 ) return false;
+    if (month < 1 || month > 12) return false;
+    if (day < 1 || day > 31) return false;
+    
+    return true;
+}
+
+MyVector<string> XuLyThaoTac::locGDTheoKhoangTG(const string& tuNgay, const string& denNgay) {
+    MyVector<string> result;
+    for (int i = 0; i < dm.getDsGiaoDich().get_size(); i++) {
+        string maGD = dm.getDsGiaoDich()[i].getMaGD();
+        if (maGD >= tuNgay && maGD <= denNgay) {
+            result.push_back(maGD);
+        }
+    }
+    return result;
+}
+
+MyVector<ChiTietGD*> XuLyThaoTac::locCTGDTheoKhoangTG(const string& tuNgay, const string& denNgay) {
+    MyVector<ChiTietGD*> result;
+    for (int i = 0; i < dm.getDsChiTietGD().get_size(); i++) {
+        string maGD = dm.getDsChiTietGD()[i]->getMaGD();
+        if (maGD >= tuNgay && maGD <= denNgay) {
+            result.push_back(dm.getDsChiTietGD()[i]);
+        }
+    }
+    return result;
+}
+
+void XuLyThaoTac::hienThiDSGDDaLoc(const MyVector<string>& dsNgay) {
+    if (dsNgay.get_size() == 0) {
+        cout << "\nKhong tim thay giao dich nao trong khoang thoi gian nay!\n";
+        return;
+    }
+    
+    string line = "+-" + string(12, '-') + "-+-" + string(15, '-') + "-+-" + string(15, '-') + "-+";
+    cout << "\n--- DANH SACH GIAO DICH DA LOC ---\n";
+    cout << line << endl;
+    cout << "| " << left << setw(12) << "Ma GD" << " | "
+         << left << setw(15) << "Tong Thu" << " | "
+         << left << setw(15) << "Tong Chi" << " |" << endl;
+    cout << line << endl;
+
+    for (int i = dsNgay.get_size() - 1; i >= 0; i--) {
+        GiaoDich* gd = qlGD->tim_GD(dsNgay[i]);
+        if (gd) {
+            cout << "| " << left << setw(12) << gd->getMaGD() << " | "
+                 << right << setw(15) << gd->getTongThu() << " | "
+                 << right << setw(15) << gd->getTongChi() << " |" << endl;
+        }
+    }
+    cout << line << endl;
+}
+
+void XuLyThaoTac::hienThiDSCTGDDaLoc(const MyVector<ChiTietGD*>& dsCT) {
+    if (dsCT.get_size() == 0) {
+        cout << "\nKhong tim thay chi tiet giao dich nao trong khoang thoi gian nay!\n";
+        return;
+    }
+    
+    string line = "+-" + string(10, '-') + "-+-" + string(10, '-') + "-+-"
+                + string(20, '-') + "-+-" + string(20, '-') + "-+-"
+                + string(30, '-') + "-+-" + string(15, '-') + "-+";
+
+    cout << "\n--- DANH SACH CHI TIET GIAO DICH DA LOC ---\n";
+    cout << line << endl;
+    cout << "| " << left << setw(10) << "Ma GD" << " | "
+         << left << setw(10) << "Ma CT" << " | "
+         << left << setw(20) << "Ten Vi" << " | "
+         << left << setw(20) << "Danh Muc" << " | "
+         << left << setw(30) << "Mo Ta" << " | "
+         << right << setw(15) << "So Tien" << " |" << endl;
+    cout << line << endl;
+
+    for (int i = dsCT.get_size() - 1; i >= 0; i--) {
+        ChiTietGD* ct = dsCT[i];
+        string tenVi = (ct->getVi()) ? ct->getVi()->getTenVi() : "---";
+        string tenDM = (ct->getDanhMuc()) ? ct->getDanhMuc()->getTenDM() : "---";
+
+        cout << "| " << left << setw(10) << ct->getMaGD() << " | "
+             << left << setw(10) << ct->getMaCTGD() << " | "
+             << left << setw(20) << tenVi << " | "
+             << left << setw(20) << tenDM << " | "
+             << left << setw(30) << ct->getMoTa() << " | "
+             << right << setw(15) << ct->getSoTienGD() << " |" << endl;
+    }
+    cout << line << endl;
+}
+
 // ==================== MENUS ====================
 
 void XuLyThaoTac::showLoginMenu() {
@@ -73,6 +183,7 @@ void XuLyThaoTac::showLoginMenu() {
     string line_sep = "+-" + string(30, '-') + "-+";
     cout << line_sep << endl;
     cout << "| " << "       QUAN LY CHI TIEU       " << " |" << endl;
+    cout << line_sep << endl;
     cout << "| " << left << setw(30) << " 1. Dang nhap" << " |" << endl;
     cout << "| " << left << setw(30) << " 2. Dang ky" << " |" << endl;
     cout << "| " << left << setw(30) << " 0. Thoat" << " |" << endl;
@@ -96,45 +207,36 @@ void XuLyThaoTac::showLoginMenu() {
 }
 
 void XuLyThaoTac::showMainMenu() {
-    int subChoice;
+    int choice;
     do {
-        string line_sep = "+-" + string(40, '-') + "-+";
+        string line_sep = "+-" + string(45, '-') + "-+";
         cout << line_sep << endl;
         string title = "MENU CHINH";
 
-        int pad_left = (40 - title.length()) / 2;
-        int pad_right = 40 - title.length() - pad_left;
+        int pad_left = (45 - title.length()) / 2;
+        int pad_right = 45 - title.length() - pad_left;
         cout << "| " << string(pad_left, ' ') << title << string(pad_right, ' ') << " |" << endl;
-
-        cout << "| " << left << setw(40) << " 1. Xem danh sach vi" << " |" << endl;
-        cout << "| " << left << setw(40) << " 2. Xem danh muc" << " |" << endl;
-        cout << "| " << left << setw(40) << " 3. Them giao dich" << " |" << endl;
-        cout << "| " << left << setw(40) << " 4. Thong ke chi tieu tung thang trong nam" << " |" << endl;
-        cout << "| " << left << setw(40) << " 5. Xem danh sach giao dich" << " |" << endl;
-        cout << "| " << left << setw(40) << " 6. Xem chi tiet giao dich theo ngay" << " | " << endl;
-        cout << "| " << left << setw(40) << " 7. Chinh sua ngay giao dich" << " | " << endl;
-        cout << "| " << left << setw(40) << " 8. Chinh sua chi tiet giao dich" << " | " << endl;
-        cout << "| " << left << setw(40) << " 9. Xoa giao dich theo ngay" << " | " << endl;
-        cout << "| " << left << setw(40) << " 10. Xoa chi tiet giao dich" << " | " << endl;
-        cout << "| " << left << setw(40) << " 11. Thay doi mat khau" << " |" << endl;
-        cout << "| " << left << setw(40) << " 12. Xoa tai khoan" << " |" << endl;
-        cout << "| " << left << setw(40) << " 0. Dang xuat" << " |" << endl;
+        cout << line_sep << endl;
+        cout << "| " << left << setw(45) << " 1. Quan ly giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 2. Bao cao & Thong ke" << " |" << endl;
+        cout << "| " << left << setw(45) << " 3. Xem danh muc" << " |" << endl;
+        cout << "| " << left << setw(45) << " 4. Xem vi" << " |" << endl;
+        cout << "| " << left << setw(45) << " 5. Quan ly nguoi dung" << " |" << endl;
+        cout << "| " << left << setw(45) << " 0. Dang xuat" << " |" << endl;
         cout << line_sep << endl;
         cout << "Chon: ";
-        subChoice = getInput<int>("");
+        choice = getInput<int>("");
 
-        switch (subChoice) {
+        switch (choice) {
         case 1:
-        {
             clearScreen();
-            cout << "\n--- DANH SACH VI ---\n";
-            qlVi->inDanhSachVi();
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-            clearScreen();
+            showMenuQuanLyGD();
             break;
-        }
-        case 2: {
+        case 2:
+            clearScreen();
+            showMenuBaoCao();
+            break;
+        case 3: {
             clearScreen();
             cout << "\n--- DANH MUC ---\n";
             qlDM->inDanhSachDM();
@@ -143,43 +245,142 @@ void XuLyThaoTac::showMainMenu() {
             clearScreen();
             break;
         }
-        case 3: {
+        case 4: {
             clearScreen();
-            cout << "\n--- THEM GIAO DICH ---\n";
-            XuLyThemGD();
-
+            cout << "\n--- DANH SACH VI ---\n";
+            qlVi->inDanhSachVi();
             cout << "\nNhan Enter de tro ve menu...";
             cin.get();
-
-            clearScreen();
-            break;
-        }
-        case 4:
-        {
-            clearScreen();
-            string nam;
-            cout << "Nhap so nam: ";
-            getline(cin, nam);
-            qlGD->thongKeTheoThang(nam);
-
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-
             clearScreen();
             break;
         }
         case 5:
-        {
+            clearScreen();
+            showMenuQuanLyNguoiDung();
+            if (nguoiDungHienTai == nullptr)
+            {
+                return;
+            }
+            break;
+        case 0: {
+            clearScreen();
+            cout << "Dang xuat va luu du lieu...\n";
+            dm.saveDataNguoiDung(nguoiDungHienTai);
+            nguoiDungHienTai = nullptr;
+            clearScreen();
+            return;
+        }
+        default:
+            clearScreen();
+            cout << "Lua chon khong hop le.\n";
+            clearScreen();
+        }
+    } while (choice != 0);
+}
+
+void XuLyThaoTac::showMenuQuanLyGD() {
+    int choice;
+    do {
+        string line_sep = "+-" + string(45, '-') + "-+";
+        cout << line_sep << endl;
+        string title = "QUAN LY GIAO DICH";
+        int width = 45;
+        int leftPadding = (width - title.length()) / 2;
+        int rightPadding = width - title.length() - leftPadding;
+        cout << "| " 
+            << string(leftPadding, ' ') 
+            << title 
+            << string(rightPadding, ' ')
+            << " |" << endl;
+        cout << line_sep << endl;
+        cout << "| " << left << setw(45) << " 1. Them giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 2. Sua giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 3. Xoa giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 4. Sua chi tiet giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 5. Xoa chi tiet giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 0. Quay lai menu chinh" << " |" << endl;
+        cout << line_sep << endl;
+        cout << "(Nhan ESC bat ky luc nao de huy thao tac)\n";
+        choice = getInput<int>("Chon: ");
+
+        switch (choice) {
+        case 1:
+            clearScreen();
+            XuLyThemGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 2:
+            clearScreen();
+            XuLyChinhSuaGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 3:
+            clearScreen();
+            XuLyXoaGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 4:
+            clearScreen();
+            XuLyChinhSuaCTGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 5:
+            clearScreen();
+            XuLyXoaCTGD();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 0:
+            clearScreen();
+            return;
+        default:
+            clearScreen();
+            cout << "Lua chon khong hop le.\n";
+        }
+    } while (choice != 0);
+}
+
+void XuLyThaoTac::showMenuBaoCao() {
+    int choice;
+    do {
+       string line_sep = "+-" + string(45, '-') + "-+";
+        cout << line_sep << endl;
+        string title = "BAO CAO & THONG KE";
+        int width = 45;
+        int leftPadding = (width - title.length()) / 2;
+        int rightPadding = width - title.length() - leftPadding;
+        cout << "| " 
+            << string(leftPadding, ' ') 
+            << title 
+            << string(rightPadding, ' ')
+            << " |" << endl;
+        cout << line_sep << endl;
+        cout << "| " << left << setw(45) << " 1. Xem danh sach giao dich" << " |" << endl;
+        cout << "| " << left << setw(45) << " 2. Xem chi tiet giao dich theo ngay" << " |" << endl;
+        cout << "| " << left << setw(45) << " 3. Thong ke theo thang" << " |" << endl;
+        cout << "| " << left << setw(45) << " 0. Quay lai menu chinh" << " |" << endl;
+        cout << line_sep << endl;
+        choice = getInput<int>("Chon: ");
+
+        switch (choice) {
+        case 1: {
             clearScreen();
             qlGD->inDanhSachGD();
             cout << "\nNhan Enter de tro ve menu...";
             cin.get();
-
             clearScreen();
             break;
         }
-        case 6:
-        {
+        case 2: {
             clearScreen();
             cout << "Vui long nhap ngay theo dinh dang (YYYYMMDD): ";
             string magd;
@@ -190,92 +391,89 @@ void XuLyThaoTac::showMainMenu() {
             clearScreen();
             break;
         }
-        case 7:
-        {
+        case 3: {
             clearScreen();
-            XuLyChinhSuaGD();
+            string nam;
+            cout << "Nhap nam can xem: ";
+            getline(cin, nam);
+            qlGD->thongKeTheoThang(nam);
             cout << "\nNhan Enter de tro ve menu...";
             cin.get();
             clearScreen();
             break;
         }
-        case 8:
-        {
-            clearScreen();
-            XuLyChinhSuaCTGD();
-
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-
-            clearScreen();
-            break;
-        }
-        case 9:
-        {
-            clearScreen();
-            XuLyXoaGD();
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-
-            clearScreen();
-            break;
-        }
-        case 10:
-        {
-            clearScreen();
-            XuLyXoaCTGD();
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-
-            clearScreen();
-            break;
-        }
-        case 11:
-        {
-            clearScreen();
-            XuLySuaMK();
-
-            cout << "\nNhan Enter de tro ve menu...";
-            cin.get();
-
-            clearScreen();
-            break;
-        }
-        case 12:
-        {
-            clearScreen();
-            bool daXoa = XuLyXoaTK();
-
-            if (daXoa)
-            {
-                cout << "\nNhan Enter de tro ve man hinh dang nhap...";
-                cin.get();
-                clearScreen();
-                return;
-            }
-            else
-            {
-                cout << "\nNhan Enter de tro ve menu...";
-                cin.get();
-                clearScreen();
-                break;
-            }
-        }
-        case 0: {
-            clearScreen();
-            cout << "Dang xuat va luu du lieu...\n";
-            dm.saveDataNguoiDung(nguoiDungHienTai);
-            nguoiDungHienTai = nullptr;
+        case 0:
             clearScreen();
             return;
-            break;
-        }
         default:
             clearScreen();
             cout << "Lua chon khong hop le.\n";
-            clearScreen();
         }
-    } while (subChoice != 0);
+    } while (choice != 0);
+}
+
+void XuLyThaoTac::showMenuQuanLyNguoiDung() {
+    int choice;
+    do {
+        string line_sep = "+-" + string(45, '-') + "-+";
+        cout << line_sep << endl;
+        string title = "QUAN LY NGUOI DUNG";
+        int width = 45;
+        int leftPadding = (width - title.length()) / 2;
+        int rightPadding = width - title.length() - leftPadding;
+        cout << "| " 
+            << string(leftPadding, ' ') 
+            << title 
+            << string(rightPadding, ' ')
+            << " |" << endl;
+        cout << line_sep << endl;
+        cout << "| " << left << setw(45) << " 1. Xem thong tin tai khoan" << " |" << endl;
+        cout << "| " << left << setw(45) << " 2. Doi mat khau" << " |" << endl;
+        cout << "| " << left << setw(45) << " 3. Xoa tai khoan" << " |" << endl;
+        cout << "| " << left << setw(45) << " 0. Quay lai menu chinh" << " |" << endl;
+        cout << line_sep << endl;
+        choice = getInput<int>("Chon: ");
+
+        switch (choice) {
+        case 1:
+            clearScreen();
+            XuLyXemThongTinTaiKhoan();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 2:
+            clearScreen();
+            XuLySuaMK();
+            cout << "\nNhan Enter de tro ve menu...";
+            cin.get();
+            clearScreen();
+            break;
+        case 3: {
+            clearScreen();
+            bool daXoa = XuLyXoaTK();
+            if (daXoa) {
+                cout << "\nNhan Enter de thoat...";
+                cin.get();
+                nguoiDungHienTai = nullptr;
+                clearScreen();
+                return;
+            }
+            else {
+                cout << "\nNhan Enter de tro ve menu...";
+                cin.get();
+                clearScreen();
+            }
+            break;
+        }
+        case 0:
+            clearScreen();
+            return;
+        default:
+            clearScreen();
+            cout << "Lua chon khong hop le.\n";
+        }
+    } while (choice != 0);
 }
 
 // ==================== HANDLERS ====================
@@ -343,6 +541,8 @@ void XuLyThaoTac::XuLyDangKy() {
 void XuLyThaoTac::XuLyThemGD() {
     clearScreen();
     cout << "--- THEM GIAO DICH ---\n";
+    cout << "(Nhan ESC de huy)\n\n";
+    
     int vitri;
     time_t now = time(0);
     tm gio;
@@ -353,22 +553,35 @@ void XuLyThaoTac::XuLyThemGD() {
         << setw(2) << gio.tm_mday << endl;
     cout << setfill(' ');
 
-    cout << endl << "Nhac nho nho: 'Vui long nhap thoi gian giao dich dung dinh dang (YYYYMMDD)'" << endl << endl;
-    string maGD = getInput<string>("Nhap thoi gian giao dich (YYYYMMDD): ");
-    while (maGD == "")
-    {
-        cout << "khong de ma giao dich trong!! " << endl;
-        maGD = getInput<string>("Nhap thoi gian giao dich (YYYYMMDD): ");
+    cout << endl << "Nhac nho: 'Vui long nhap thoi gian giao dich dung dinh dang (YYYYMMDD)'" << endl << endl;
+    
+    bool escaped = false;
+    string maGD = getInputWithEsc("Nhap thoi gian giao dich (YYYYMMDD): ", escaped);
+    
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
     }
+    
+    while (maGD == "" || !kiemTraNgayHopLe(maGD))
+    {
+        cout << "Ma giao dich khong hop le!" << endl;
+        maGD = getInputWithEsc("Nhap thoi gian giao dich (YYYYMMDD): ", escaped);
+        if (escaped) {
+            cout << "\n(!) Da huy thao tac!\n";
+            return;
+        }
+    }
+    
     GiaoDich* gd_cha = nullptr;
     for (size_t i = 0; i < dm.getDsGiaoDich().get_size(); ++i) {
         if (dm.getDsGiaoDich()[i].getMaGD() == maGD) {
             gd_cha = &dm.getDsGiaoDich()[i];
-            for (int i = 0; i < dm.getDsChiTietGD().get_size(); i++)
+            for (int j = 0; j < dm.getDsChiTietGD().get_size(); j++)
             {
-                if (dm.getDsChiTietGD()[i]->getMaGD() == maGD)
+                if (dm.getDsChiTietGD()[j]->getMaGD() == maGD)
                 {
-                    gd_cha->themChiTiet(dm.getDsChiTietGD()[i]);
+                    gd_cha->themChiTiet(dm.getDsChiTietGD()[j]);
                 }
             }
             vitri = i;
@@ -386,26 +599,53 @@ void XuLyThaoTac::XuLyThemGD() {
     else {
         cout << "Them chi tiet vao giao dich: " << maGD << endl;
     }
+    
     while (true) {
         cout << "\n--DANH SACH VI---\n";
         qlVi->inDanhSachVi();
-        int maVi = getInput<int>("Nhap ma vi: ");
+        
+        int maVi;
+        cout << "Nhap ma vi (hoac -1 de huy): ";
+        cin >> maVi;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        if (maVi == -1) {
+            cout << "\n(!) Da huy them chi tiet!\n";
+            break;
+        }
+        
         Vi* vi = qlVi->TimVi(maVi);
-        if (!vi) { cout << "Ma vi khong hop le!" << endl; return; }
+        if (!vi) { 
+            cout << "Ma vi khong hop le!" << endl; 
+            continue;
+        }
 
         cout << "\n--- DANH SACH DANH MUC ---\n";
         qlDM->inDanhSachDM();
-        int maDM = getInput<int>("Nhap ma danh muc: ");
+        
+        int maDM;
+        cout << "Nhap ma danh muc (hoac -1 de huy): ";
+        cin >> maDM;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        
+        if (maDM == -1) {
+            cout << "\n(!) Da huy them chi tiet!\n";
+            break;
+        }
+        
         DanhMuc* danhmuc = qlDM->TimDM(maDM);
-        if (!danhmuc) { cout << "Ma danh muc khong hop le!" << endl; return; }
+        if (!danhmuc) { 
+            cout << "Ma danh muc khong hop le!" << endl; 
+            continue;
+        }
 
         string moTa = getInput<string>("Nhap mo ta: ");
-        long long soTien = getInput<int>("Nhap so tien giao dich: ");
+        long long soTien = getInput<long long>("Nhap so tien giao dich: ");
 
         if (soTien <= 0)
         {
             cout << "So tien khong hop le" << endl;
-            return;
+            continue;
         }
 
         ChiTietGD* ct = qlCTGD->taoChiTiet(maGD, maVi, maDM, moTa, soTien);
@@ -419,10 +659,11 @@ void XuLyThaoTac::XuLyThemGD() {
         string xn;
         cout << "Them chi tiet khac? (y/n): ";
         cin >> xn;
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
 
         if (xn == "n" || xn == "N") break;
-
     }
+    
     gd_cha->capNhatTongTien();
     dm.getDsGiaoDich()[vitri].setTongThu(gd_cha->getTongThu());
     dm.getDsGiaoDich()[vitri].setTongChi(gd_cha->getTongChi());
@@ -430,10 +671,359 @@ void XuLyThaoTac::XuLyThemGD() {
     cout << "Luu lai toan bo du lieu..." << endl;
 }
 
+void XuLyThaoTac::XuLyChinhSuaGD()
+{
+    cout << "\n--- CHINH SUA NGAY GIAO DICH ---\n";
+    cout << "(Nhan ESC de huy)\n\n";
+    
+    // Loc theo khoang thoi gian
+    bool escaped = false;
+    string tuNgay = getInputWithEsc("Nhap ngay bat dau (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(tuNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    string denNgay = getInputWithEsc("Nhap ngay ket thuc (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(denNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    MyVector<string> dsLoc = locGDTheoKhoangTG(tuNgay, denNgay);
+    hienThiDSGDDaLoc(dsLoc);
+    
+    if (dsLoc.get_size() == 0) return;
+    
+    string maGD = getInputWithEsc("\nNhap ma giao dich can sua (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+
+    // Kiem tra ma cu co ton tai khong
+    if (qlGD->tim_GD(maGD) == nullptr) {
+        cout << "(!) Loi: Khong tim thay giao dich ngay " << maGD << "!\n";
+        return;
+    }
+    
+    string newID = getInputWithEsc("Nhap ma giao dich moi (yyyymmdd): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(newID)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+
+    // Goi ham xu ly logic (Gop hoac Doi ten)
+    if (qlGD->doiNgayGiaoDich(maGD, newID)) {
+        qlCTGD->suaMaGiaoDich_CTGD(maGD, newID);
+        dm.saveDataNguoiDung(nguoiDungHienTai);
+        cout << "\n(v) Cap nhat thanh cong!\n";
+    }
+    else {
+        cout << "\n(!) Cap nhat that bai!\n";
+    }
+}
+
+void XuLyThaoTac::XuLyChinhSuaCTGD()
+{
+    cout << "\n--- CHINH SUA CHI TIET GIAO DICH ---\n";
+    cout << "(Nhan ESC de huy)\n\n";
+    
+    // Loc theo khoang thoi gian
+    bool escaped = false;
+    string tuNgay = getInputWithEsc("Nhap ngay bat dau (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(tuNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    string denNgay = getInputWithEsc("Nhap ngay ket thuc (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(denNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    MyVector<ChiTietGD*> dsLoc = locCTGDTheoKhoangTG(tuNgay, denNgay);
+    hienThiDSCTGDDaLoc(dsLoc);
+    
+    if (dsLoc.get_size() == 0) return;
+
+    int idCanSua;
+    cout << "\nNhap Ma CTGD can sua (hoac -1 de huy): ";
+    if (!(cin >> idCanSua)) {
+        cout << "Loi: Vui long nhap dung dinh dang so!\n";
+        cin.clear(); cin.ignore(10000, '\n');
+        return;
+    }
+    cin.ignore();
+    
+    if (idCanSua == -1) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+
+    ChiTietGD* ct = qlCTGD->timCTGD(idCanSua);
+
+    if (ct == nullptr) {
+        cout << "Khong tim thay CTGD co ma: " << idCanSua << "\n";
+        return;
+    }
+    
+    string oldMaGD = ct->getMaGD();
+    long long oldSoTien = ct->getSoTienGD();
+    int maVi = ct->getMaVi();
+    DanhMuc* dmuc = ct->getDanhMuc();
+    string loaiDM = (dmuc) ? dmuc->getLoaiDM() : "";
+    
+    cout << "\n(Huong dan: Nhan Enter neu muon GIU NGUYEN gia tri trong ngoac)\n";
+    cout << "--------------------------------------------------\n";
+
+    string newMaGD = inputString("-> Ngay (yyyymmdd)", ct->getMaGD());
+
+    long long newSoTien = inputLong("-> So tien (VND)", ct->getSoTienGD());
+
+    string newMoTa = inputString("-> Mo ta", ct->getMoTa());
+
+    cout << "--------------------------------------------------\n";
+
+    // Goi ham xu ly
+    if (qlCTGD->suaCTGD(idCanSua, newMaGD, newMoTa, newSoTien))
+    {
+        if (oldSoTien != newSoTien && !loaiDM.empty())
+        {
+            string loai = (loaiDM == "Thu") ? "Chi" : "Thu";
+            //Cap nhat so tien cu ra
+            qlVi->capNhatSoDu(maVi, oldSoTien, loai);
+
+            //Cap nhat so tien moi vao
+            qlVi->capNhatSoDu(maVi, newSoTien, loaiDM);
+        }
+
+        MyVector<string> daysToRefresh;
+        daysToRefresh.push_back(oldMaGD);
+        if (oldMaGD != newMaGD) {
+            daysToRefresh.push_back(newMaGD);
+            if (qlGD->tim_GD(newMaGD) == nullptr) {
+                qlGD->taoGD(newMaGD);
+                cout << "(Tu dong tao giao dich moi cho ngay " << newMaGD << ")\n";
+            }
+        }
+
+        for (int k = 0; k < daysToRefresh.get_size(); k++)
+        {
+            string targetDate = daysToRefresh[k];
+            GiaoDich* gdTarget = qlGD->tim_GD(targetDate);
+
+            if (gdTarget)
+            {
+                gdTarget->getDsChiTiet().clear();
+
+                for (int i = 0; i < dm.getDsChiTietGD().get_size(); i++)
+                {
+                    if (dm.getDsChiTietGD()[i]->getMaGD() == targetDate)
+                    {
+                        gdTarget->themChiTiet(dm.getDsChiTietGD()[i]);
+                    }
+                }
+
+                gdTarget->capNhatTongTien();
+            }
+        }
+
+        if (oldMaGD != newMaGD) {
+            GiaoDich* oldGD = qlGD->tim_GD(oldMaGD);
+            if (oldGD && oldGD->getTongThu() == 0 && oldGD->getTongChi() == 0) {
+                qlGD->xoaGiaoDich(oldMaGD);
+            }
+        }
+        dm.saveDataNguoiDung(nguoiDungHienTai);
+        cout << "\n(v) CAP NHAT THANH CONG!\n";
+    }
+    else
+    {
+        cout << "\n(!) CAP NHAT THAT BAI!\n";
+    }
+}
+
+void XuLyThaoTac::XuLyXoaGD()
+{
+    cout << "\n--- XOA GIAO DICH THEO NGAY ---\n";
+    cout << "(Nhan ESC de huy)\n\n";
+    
+    // Loc theo khoang thoi gian
+    bool escaped = false;
+    string tuNgay = getInputWithEsc("Nhap ngay bat dau (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(tuNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    string denNgay = getInputWithEsc("Nhap ngay ket thuc (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(denNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    MyVector<string> dsLoc = locGDTheoKhoangTG(tuNgay, denNgay);
+    hienThiDSGDDaLoc(dsLoc);
+    
+    if (dsLoc.get_size() == 0) return;
+    
+    string magd = getInputWithEsc("\nNhap ngay giao dich can xoa (yyyymmdd): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (qlGD->tim_GD(magd) == nullptr)
+    {
+        cout << "Khong tim thay ma giao dich tren!" << endl;
+        return;
+    }
+    
+    char xacNhan;
+    cout << "Ban co chac chan muon xoa? (y/n): ";
+    cin >> xacNhan;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    
+    if (xacNhan != 'y' && xacNhan != 'Y') {
+        cout << "\n(!) Da huy xoa!\n";
+        return;
+    }
+    
+    qlGD->xoaGiaoDich(magd);
+    for (int i = dm.getDsChiTietGD().get_size() - 1; i >= 0; i--)
+    {
+        if (dm.getDsChiTietGD()[i]->getMaGD() == magd)
+        {
+            int index = dm.getDsChiTietGD()[i]->getMaCTGD();
+            string loai_tam = dm.getDsChiTietGD()[i]->getDanhMuc()->getLoaiDM();
+            string loai = (loai_tam == "Thu") ? "Chi" : "Thu";
+
+            qlVi->capNhatSoDu(dm.getDsChiTietGD()[i]->getMaVi(), dm.getDsChiTietGD()[i]->getSoTienGD(), loai);
+            qlCTGD->xoaCTGD(index);
+        }
+    }
+    cout << "Da xoa giao dich" << endl;
+    dm.saveDataNguoiDung(nguoiDungHienTai);
+}
+
+void XuLyThaoTac::XuLyXoaCTGD()
+{
+    cout << "\n--- XOA CHI TIET GIAO DICH ---\n";
+    cout << "(Nhan ESC de huy)\n\n";
+    
+    // Loc theo khoang thoi gian
+    bool escaped = false;
+    string tuNgay = getInputWithEsc("Nhap ngay bat dau (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(tuNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    string denNgay = getInputWithEsc("Nhap ngay ket thuc (YYYYMMDD): ", escaped);
+    if (escaped) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    if (!kiemTraNgayHopLe(denNgay)) {
+        cout << "Ngay khong hop le!\n";
+        return;
+    }
+    
+    MyVector<ChiTietGD*> dsLoc = locCTGDTheoKhoangTG(tuNgay, denNgay);
+    hienThiDSCTGDDaLoc(dsLoc);
+    
+    if (dsLoc.get_size() == 0) return;
+    
+    int mact;
+    cout << "\nNhap ma chi tiet giao dich can xoa (hoac -1 de huy): ";
+    cin >> mact;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    
+    if (mact == -1) {
+        cout << "\n(!) Da huy thao tac!\n";
+        return;
+    }
+    
+    ChiTietGD* ct = qlCTGD->timCTGD(mact);
+    if (ct == nullptr)
+    {
+        cout << "Khong tim thay ma chi tiet giao dich tren" << endl;
+        return;
+    }
+    
+    GiaoDich* gdCha = qlGD->tim_GD(ct->getMaGD());
+    if(gdCha == nullptr) {
+        cout << "\n(x) Loi: Khong tim thay giao dich cha (" << ct->getMaGD() << ") cho chi tiet nay.\n";
+        return;
+    }
+    
+    char xacNhan;
+    cout << "Ban co chac chan muon xoa? (y/n): ";
+    cin >> xacNhan;
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    
+    if (xacNhan != 'y' && xacNhan != 'Y') {
+        cout << "\n(!) Da huy xoa!\n";
+        return;
+    }
+    
+    string loaiHienTai = ct->getDanhMuc()->getLoaiDM();
+    string loaiDaoNguoc = (loaiHienTai == "Thu") ? "Chi" : "Thu";
+    qlVi->capNhatSoDu(ct->getMaVi(), ct->getSoTienGD(), loaiDaoNguoc);
+    gdCha->xoaCTGD(ct);       
+    qlCTGD->xoaCTGD(mact);
+    gdCha->capNhatTongTien();
+    dm.saveDataNguoiDung(nguoiDungHienTai);
+    cout << "Xoa chi tiet giao dich thanh cong!" << endl;
+}
+
 void XuLyThaoTac::XuLySuaMK()
 {
     string id = nguoiDungHienTai->getID();
-    cout << "Nhap mat khau: ";
+    cout << "Nhap mat khau hien tai: ";
     string pass = qlND->AnMK();
     int index = qlND->KiemTraMK(id, pass);
     if (index != -1)
@@ -448,14 +1038,13 @@ void XuLyThaoTac::XuLySuaMK()
     else
     {
         cout << "Sai mat khau!!" << endl;
-        return;
     }
 }
 
 bool XuLyThaoTac::XuLyXoaTK()
 {
     string id = nguoiDungHienTai->getID();
-    cout << "Nhap mat khau: ";
+    cout << "Nhap mat khau de xac nhan: ";
     string pass = qlND->AnMK();
     int index = qlND->KiemTraMK(id, pass);
     if (index != -1)
@@ -464,7 +1053,7 @@ bool XuLyThaoTac::XuLyXoaTK()
         cout << "Xac nhan xoa tai khoan!! (y/n): ";
         cin >> temp;
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
-        if (temp == 'y')
+        if (temp == 'y' || temp == 'Y')
         {
             qlND->XoaTaiKhoan(index);
             cout << "Xoa nguoi dung thanh cong!" << endl;
@@ -478,9 +1067,8 @@ bool XuLyThaoTac::XuLyXoaTK()
             catch (const std::exception& e) {
                 cout << "Loi khi xoa thu muc: " << e.what() << endl;
             }
-            dm.saveNguoiDung(dm.getBasePath() + "users.txt", dm.getDsNguoiDung());
             nguoiDungHienTai = nullptr;
-            clearScreen();
+            dm.saveNguoiDung(dm.getBasePath() + "users.txt", dm.getDsNguoiDung());
             return true;
         }
         else
@@ -496,196 +1084,17 @@ bool XuLyThaoTac::XuLyXoaTK()
     }
 }
 
-void XuLyThaoTac::XuLyChinhSuaGD()
+void XuLyThaoTac::XuLyXemThongTinTaiKhoan()
 {
-    cout << "\n---CHINH SUA NGAY GIAO DICH---\n";
-    string maGD;
-    cout << "\nNhap ma giao dich can sua (YYYYMMDD): ";
-    cin >> maGD;
-
-    // Kiểm tra mã cũ có tồn tại không
-    if (qlGD->tim_GD(maGD) == nullptr) {
-        cout << "(!) Loi: Khong tim thay giao dich ngay " << maGD << "!\n";
-    }
-    else {
-        string newID;
-        cout << "Nhap ma giao dich moi (yyyymmdd): ";
-        cin >> newID;
-
-        // Gọi hàm xử lý logic (Gộp hoặc Đổi tên)
-        if (qlGD->doiNgayGiaoDich(maGD, newID)) {
-            qlCTGD->suaMaGiaoDich_CTGD(maGD, newID);
-            dm.saveDataNguoiDung(nguoiDungHienTai);
-            cout << "\n(v) Cap nhat thanh cong!\n";
-        }
-        else {
-            cout << "\n(!) Cap nhat that bai!\n";
-        }
-    }
-    cin.ignore(numeric_limits<streamsize>::max(), '\n');
-}
-
-void XuLyThaoTac::XuLyChinhSuaCTGD()
-{
-    cout << "\n--- CHINH SUA CHI TIET GIAO DICH ---\n";
-
-    int idCanSua;
-    cout << "Nhap Ma CTGD can sua: ";
-    if (!(cin >> idCanSua)) {
-        cout << "Loi: Vui long nhap dung dinh dang so!\n";
-        cin.clear(); cin.ignore(10000, '\n');
-        cout << "\nNhan Enter de quay lai..."; cin.get(); return;
-    }
-    cin.ignore();
-
-    ChiTietGD* ct = qlCTGD->timCTGD(idCanSua);
-
-    if (ct == nullptr) cout << "Khong tim thay CTGD co ma: " << idCanSua << "\n";
-    else {
-        string oldMaGD = ct->getMaGD();
-        long long oldSoTien = ct->getSoTienGD();
-        int maVi = ct->getMaVi();
-        DanhMuc* dmuc = ct->getDanhMuc();
-        string loaiDM = (dmuc) ? dmuc->getLoaiDM() : "";
-        cout << "\n(Huong dan: Nhan Enter neu muon GIU NGUYEN gia tri trong ngoac)\n";
-        cout << "--------------------------------------------------\n";
-
-        string newMaGD = inputString("-> Ngay (yyyymmdd)", ct->getMaGD());
-
-        long long newSoTien = inputLong("-> So tien (VND)", ct->getSoTienGD());
-
-        string newMoTa = inputString("-> Mo ta", ct->getMoTa());
-
-        cout << "--------------------------------------------------\n";
-
-        // Gọi hàm xử lý
-        if (qlCTGD->suaCTGD(idCanSua, newMaGD, newMoTa, newSoTien))
-        {
-            if (oldSoTien != newSoTien && !loaiDM.empty())
-            {
-                string loai = (loaiDM == "Thu") ? "Chi" : "Thu";
-                //Cập nhật số tiền cũ ra
-                qlVi->capNhatSoDu(maVi, oldSoTien, loai);
-
-                //Cập nhật số tiền mới vào
-                qlVi->capNhatSoDu(maVi, newSoTien, loaiDM);
-            }
-
-            MyVector<string> daysToRefresh;
-            daysToRefresh.push_back(oldMaGD);
-            if (oldMaGD != newMaGD) {
-                daysToRefresh.push_back(newMaGD);
-                if (qlGD->tim_GD(newMaGD) == nullptr) {
-                    qlGD->taoGD(newMaGD);
-                    cout << "(Tu dong tao giao dich moi cho ngay " << newMaGD << ")\n";
-                }
-            }
-
-            for (int k = 0; k < daysToRefresh.get_size(); k++)
-            {
-                string targetDate = daysToRefresh[k];
-                GiaoDich* gdTarget = qlGD->tim_GD(targetDate);
-
-                if (gdTarget)
-                {
-                    gdTarget->getDsChiTiet().clear();
-
-                    for (int i = 0; i < dm.getDsChiTietGD().get_size(); i++)
-                    {
-                        if (dm.getDsChiTietGD()[i]->getMaGD() == targetDate)
-                        {
-                            gdTarget->themChiTiet(dm.getDsChiTietGD()[i]);
-                        }
-                    }
-
-                    gdTarget->capNhatTongTien();
-                }
-            }
-
-            if (oldMaGD != newMaGD) {
-                GiaoDich* oldGD = qlGD->tim_GD(oldMaGD);
-                if (oldGD && oldGD->getTongThu() == 0 && oldGD->getTongChi() == 0) {
-                    qlGD->xoaGiaoDich(oldMaGD);
-                }
-            }
-            dm.saveDataNguoiDung(nguoiDungHienTai);
-            cout << "\n(v) CAP NHAT THANH CONG!\n";
-        }
-        else
-        {
-            cout << "\n(v) CAP NHAT THAT BAI!\n";
-        }
-    }
-}
-
-void XuLyThaoTac::XuLyXoaGD()
-{
-    string magd;
-    cout << "\n--- XOA GIAO DICH THEO NGAY ---\n";
-    cout << "Nhap ngay giao dich can xoa (yyyymmdd): ";
-    getline(cin, magd);
-    if (qlGD->tim_GD(magd) == nullptr)
-    {
-        cout << "Khong tim thay ma giao dich tren!" << endl;
-        cout << "\nNhan Enter de tro ve menu...";
-        cin.get();
-
-        clearScreen();
-        return;
-    }
-    else
-    {
-        qlGD->xoaGiaoDich(magd);
-        for (int i = dm.getDsChiTietGD().get_size() - 1; i >= 0; i--)
-        {
-            if (dm.getDsChiTietGD()[i]->getMaGD() == magd)
-            {
-                int index = dm.getDsChiTietGD()[i]->getMaCTGD();
-                string loai_tam = dm.getDsChiTietGD()[i]->getDanhMuc()->getLoaiDM();
-                string loai = (loai_tam == "Thu") ? "Chi" : "Thu";
-
-                qlVi->capNhatSoDu(dm.getDsChiTietGD()[i]->getMaVi(), dm.getDsChiTietGD()[i]->getSoTienGD(), loai);
-                qlCTGD->xoaCTGD(index);
-            }
-        }
-        cout << "Da xoa giao dich" << endl;
-        dm.saveDataNguoiDung(nguoiDungHienTai);
-    }
-}
-
-void XuLyThaoTac::XuLyXoaCTGD()
-{
-    int mact;
-    cout << "\n--- XOA CHI TIET GIAO DICH ---\n";
-    cout << "Nhap ma chi tiet giao dich can xoa: ";
-    cin >> mact;
-    ChiTietGD* ct = qlCTGD->timCTGD(mact);
-    if (ct == nullptr)
-    {
-        cout << "Khong tim thay ma chi tiet giao dich tren" << endl;
-        cout << "\nNhan Enter de tro ve menu...";
-        cin.get();
-
-        clearScreen();
-        return;
-    }
-    GiaoDich* gdCha = qlGD->tim_GD(ct->getMaGD());
-    if(gdCha==nullptr) {
-        cout << "\n(x) Loi: Khong tim thay giao dich cha (" << ct->getMaGD() << ") cho chi tiet nay.\n";
-        cout << "\nNhan Enter de tro ve menu...";
-        cin.get();
-        clearScreen();
-        return;
-    }
-        string loaiHienTai = ct->getDanhMuc()->getLoaiDM();
-        string loaiDaoNguoc = (loaiHienTai == "Thu") ? "Chi" : "Thu";
-        qlVi->capNhatSoDu(ct->getMaVi(), ct->getSoTienGD(), loaiDaoNguoc);
-        gdCha->xoaCTGD(ct);       
-        qlCTGD->xoaCTGD(mact);
-        gdCha->capNhatTongTien();
-        dm.saveDataNguoiDung(nguoiDungHienTai);
-        cout << "Xoa chi tiet giao dich thanh cong!" << endl;
-        cin.ignore();
+    if (nguoiDungHienTai == nullptr) return;
+    
+    string line_sep = "+-" + string(40, '-') + "-+";
+    cout << "\n" << line_sep << endl;
+    cout << "| " << left << setw(40) << "   THONG TIN TAI KHOAN   " << " |" << endl;
+    cout << line_sep << endl;
+    cout << "| " << left << setw(20) << "ID:" << left << setw(20) << nguoiDungHienTai->getID() << " |" << endl;
+    cout << "| " << left << setw(20) << "Ten hien thi:" << left << setw(20) << nguoiDungHienTai->getTen() << " |" << endl;
+    cout << line_sep << endl;
 }
 
 // ==================== HELPERS ====================
@@ -700,7 +1109,7 @@ T XuLyThaoTac::getInput(const string& prompt) {
             return value;
         }
         else {
-            cout << "Nhap sai! Vui long nhap dung dinh dang so.\n";
+            cout << "Nhap sai! Vui long nhap dung dinh dang.\n";
             cin.clear();
             cin.ignore(numeric_limits<streamsize>::max(), '\n');
         }
@@ -712,10 +1121,39 @@ string XuLyThaoTac::getInput<string>(const string& prompt) {
     cout << prompt;
     string input;
     getline(cin, input);
-    if (input.empty()) {
-        getline(cin, input);
-    }
     return input;
+}
+
+
+string XuLyThaoTac::getInputWithEsc(const string& prompt, bool& escaped) {
+    escaped = false;
+    string result = "";
+    cout << prompt;
+    
+    while (true) {
+        char c = _getch();
+        
+        if (c == 27) { 
+            escaped = true;
+            cout << "\n"; 
+            return ""; 
+        }
+
+        if (c == '\r' || c == '\n') { 
+            cout << "\n";
+            return result;
+        }
+        if ((c == '\b' || c == 127) && !result.empty()) { 
+            result.pop_back();
+            cout << "\b \b"; 
+            continue;
+        }
+
+        if (isprint(c)) { 
+            result += c;
+            cout << c; 
+        }
+    }
 }
 
 long long XuLyThaoTac::inputLong(string prompt, long long oldVal) {
