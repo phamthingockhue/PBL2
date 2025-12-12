@@ -47,14 +47,14 @@ private:
     string inputString(string prompt, string oldval);
     bool kiemTraNgayHopLe(const string& ngay);
     bool checkEscPressed();
-    
+
     template <typename T>
     static T getInput(const string& prompt);
-    
+
     string getInputWithEsc(const string& prompt, bool& escaped);
 
     void clearScreen();
-    
+
 public:
     XuLyThaoTac();
     ~XuLyThaoTac();
@@ -63,4 +63,3 @@ public:
 
 template<>
 string XuLyThaoTac::getInput<string>(const string& prompt);
-

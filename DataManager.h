@@ -22,7 +22,7 @@ class DataManager
 {
 private:
     string basePath;
-    
+
     MyVector<NguoiDung> dsNguoiDung;
     MyVector<Vi> dsVi;
     MyVector<DanhMuc*> dsDanhMuc;
