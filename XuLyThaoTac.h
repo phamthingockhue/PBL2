@@ -38,7 +38,6 @@ private:
     void XuLyXoaCTGD();
     void XuLyXemThongTinTaiKhoan();
 
-    MyVector<string> locGDTheoKhoangTG(const string& tuNgay, const string& denNgay);
     MyVector<ChiTietGD*> locCTGDTheoKhoangTG(const string& tuNgay, const string& denNgay);
     void hienThiDSGDDaLoc(const MyVector<string>& dsNgay);
     void hienThiDSCTGDDaLoc(const MyVector<ChiTietGD*>& dsCT);
