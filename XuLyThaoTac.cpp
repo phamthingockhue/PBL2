@@ -483,7 +483,7 @@ void XuLyThaoTac::XuLyDangNhap() {
     cout << "--- DANG NHAP ---\n";
     string tenDangNhap = getInput<string>("Ten dang nhap: ");
     cout << "Nhap mat khau: ";
-    string matKhau = qlND->AnMK();
+    string matKhau = qlND->anMK();
 
     nguoiDungHienTai = qlND->xacThuc(tenDangNhap, matKhau);
 
@@ -520,9 +520,9 @@ void XuLyThaoTac::XuLyDangKy() {
     }
     string tenHienThi = getInput<string>("Ten hien thi: ");
     cout << "Mat khau: ";
-    string matKhau = qlND->AnMK();
+    string matKhau = qlND->anMK();
 
-    if (qlND->DangKy(tenDangNhap, tenHienThi, matKhau)) {
+    if (qlND->dangKy(tenDangNhap, tenHienThi, matKhau)) {
         cout << "Dang ky thanh cong! Ban co the dang nhap ngay.\n";
         string userFolder = dm.getBasePath() + "user_" + tenDangNhap + "/";
         if (!fs::exists(userFolder)) {
@@ -875,35 +875,8 @@ void XuLyThaoTac::XuLyXoaGD()
     cout << "\n--- XOA GIAO DICH THEO NGAY ---\n";
     cout << "(Nhan ESC de huy)\n\n";
 
-    //// Loc theo khoang thoi gian
+    // Loc theo khoang thoi gian
     bool escaped = false;
-    //string tuNgay = getInputWithEsc("Nhap ngay bat dau (YYYYMMDD): ", escaped);
-    //if (escaped) {
-    //    cout << "\n(!) Da huy thao tac!\n";
-    //    return;
-    //}
-
-    //if (!kiemTraNgayHopLe(tuNgay)) {
-    //    cout << "Ngay khong hop le!\n";
-    //    return;
-    //}
-
-    //string denNgay = getInputWithEsc("Nhap ngay ket thuc (YYYYMMDD): ", escaped);
-    //if (escaped) {
-    //    cout << "\n(!) Da huy thao tac!\n";
-    //    return;
-    //}
-
-    //if (!kiemTraNgayHopLe(denNgay)) {
-    //    cout << "Ngay khong hop le!\n";
-    //    return;
-    //}
-
-    //MyVector<string> dsLoc = locGDTheoKhoangTG(tuNgay, denNgay);
-    //hienThiDSGDDaLoc(dsLoc);
-
-    //if (dsLoc.get_size() == 0) return;
-
     string magd = getInputWithEsc("\nNhap ngay giao dich can xoa (yyyymmdd): ", escaped);
     if (escaped) {
         cout << "\n(!) Da huy thao tac!\n";
@@ -1032,14 +1005,14 @@ void XuLyThaoTac::XuLySuaMK()
 {
     string id = nguoiDungHienTai->getID();
     cout << "Nhap mat khau hien tai: ";
-    string pass = qlND->AnMK();
-    int index = qlND->KiemTraMK(id, pass);
+    string pass = qlND->anMK();
+    int index = qlND->kiemTraMK(id, pass);
     if (index != -1)
     {
         string mk;
         cout << "Nhap mat khau moi: ";
-        mk = qlND->AnMK();
-        qlND->DoiMK(index, mk);
+        mk = qlND->anMK();
+        qlND->doiMK(index, mk);
         cout << "Doi mat khau thanh cong!" << endl;
         dm.saveNguoiDung(dm.getBasePath() + "users.txt", dm.getDsNguoiDung());
     }
@@ -1053,8 +1026,8 @@ bool XuLyThaoTac::XuLyXoaTK()
 {
     string id = nguoiDungHienTai->getID();
     cout << "Nhap mat khau de xac nhan: ";
-    string pass = qlND->AnMK();
-    int index = qlND->KiemTraMK(id, pass);
+    string pass = qlND->anMK();
+    int index = qlND->kiemTraMK(id, pass);
     if (index != -1)
     {
         char temp;
@@ -1063,7 +1036,7 @@ bool XuLyThaoTac::XuLyXoaTK()
         cin.ignore(numeric_limits<streamsize>::max(), '\n');
         if (temp == 'y' || temp == 'Y')
         {
-            qlND->XoaTaiKhoan(index);
+            qlND->xoaTaiKhoan(index);
             cout << "Xoa nguoi dung thanh cong!" << endl;
             try {
                 if (fs::exists(dm.getBasePath() + "user_" + id + "/"))

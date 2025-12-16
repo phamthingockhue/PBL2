@@ -16,13 +16,13 @@ NguoiDung* QuanLyND::xacThuc(const string& userid, const string& password) {
     return nullptr;
 }
 
-bool QuanLyND::DangKy(const string& userid, const string& name, const string& password) {
+bool QuanLyND::dangKy(const string& userid, const string& name, const string& password) {
     NguoiDung newUser(userid, name, password);
     dsNguoiDung->push_back(newUser);
     return true;
 }
 
-int QuanLyND::KiemTraMK(const string& userid, const string& password)
+int QuanLyND::kiemTraMK(const string& userid, const string& password)
 {
     for (int i = 0; i < dsNguoiDung->get_size(); i++)
     {
@@ -34,7 +34,7 @@ int QuanLyND::KiemTraMK(const string& userid, const string& password)
     return -1;
 }
 
-void QuanLyND::DoiMK(int index, const string& mk)
+void QuanLyND::doiMK(int index, const string& mk)
 {
     if (index >= 0 && index < dsNguoiDung->get_size())
     {
@@ -42,7 +42,7 @@ void QuanLyND::DoiMK(int index, const string& mk)
     }
 }
 
-void QuanLyND::XoaTaiKhoan(int index)
+void QuanLyND::xoaTaiKhoan(int index)
 {
     if (index >= 0 && index < dsNguoiDung->get_size())
     {
@@ -50,7 +50,7 @@ void QuanLyND::XoaTaiKhoan(int index)
     }
 }
 
-string QuanLyND::AnMK()
+string QuanLyND::anMK()
 {
     string pass = "";
     char ch;

@@ -13,9 +13,9 @@ public:
     }
     ~QuanLyND() {}
     NguoiDung* xacThuc(const string& userid, const string& password);
-    bool DangKy(const string& userid, const string& name, const string& password);
-    string AnMK();
-    int KiemTraMK(const string& userid, const string& password);
-    void DoiMK(int index, const string& mk);
-    void XoaTaiKhoan(int index);
+    bool dangKy(const string& userid, const string& name, const string& password);
+    string anMK();
+    int kiemTraMK(const string& userid, const string& password);
+    void doiMK(int index, const string& mk);
+    void xoaTaiKhoan(int index);
 };
