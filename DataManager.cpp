@@ -240,7 +240,6 @@ void DataManager::linkDuLieu() {
             }
         }
         for (size_t k = 0; k < dsDanhMuc.get_size(); k++) {
-            // Giả sử class DanhMuc có hàm getID() hoặc getMaDM()
             if (dsDanhMuc[k]->getMaDM() == ct->getMaDM()) {
                 ct->setDM(dsDanhMuc[k]);
                 break;
